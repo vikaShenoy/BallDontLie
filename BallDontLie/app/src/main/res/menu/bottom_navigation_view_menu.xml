@@ -2,17 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-            android:id="@+id/action_performance"
-            android:icon="@drawable/ic_performance"
-            android:title="@string/menu_performance" />
-    <item
-            android:id="@+id/action_compare"
-            android:icon="@drawable/ic_compare"
-            android:title="@string/menu_compare" />
-
-    <item
-            android:id="@+id/action_schedule"
+            android:id="@+id/bottom_navigation_schedule"
             android:icon="@drawable/ic_schedule"
             android:title="@string/menu_schedule" />
-
+    <item
+            android:id="@+id/bottom_navigation_compare"
+            android:icon="@drawable/ic_compare"
+            android:title="@string/menu_compare" />
+    <item
+            android:id="@+id/bottom_navigation_performance"
+            android:icon="@drawable/ic_performance"
+            android:title="@string/menu_performance" />
 </menu>
