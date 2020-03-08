@@ -34,8 +34,11 @@ class ScheduleFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        var rootView = inflater.inflate(R.layout.fragment_schedule, container, false)
-        val data = arrayOf("Test", "SecondTest")
+        val rootView = inflater.inflate(R.layout.fragment_schedule, container, false)
+        // TODO - replace this with the api data
+        val data = ArrayList<Schedule>()
+        data.add(Schedule("100-95", "LAL", "Home"))
+        data.add(Schedule("120-100", "UTA", "Away"))
         viewAdapter = ScheduleAdapter(data)
         viewManager = LinearLayoutManager(activity)
         recyclerView = rootView.findViewById(R.id.recyclerView)
