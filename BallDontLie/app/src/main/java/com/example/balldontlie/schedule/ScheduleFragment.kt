@@ -1,4 +1,4 @@
-package com.example.balldontlie
+package com.example.balldontlie.schedule
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_schedule.*
+import com.example.balldontlie.R
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -37,8 +37,20 @@ class ScheduleFragment : Fragment() {
         val rootView = inflater.inflate(R.layout.fragment_schedule, container, false)
         // TODO - replace this with the api data
         val data = ArrayList<Schedule>()
-        data.add(Schedule("100-95", "LAL", "Home"))
-        data.add(Schedule("120-100", "UTA", "Away"))
+        data.add(
+            Schedule(
+                "100-95",
+                "LAL",
+                "Home"
+            )
+        )
+        data.add(
+            Schedule(
+                "120-100",
+                "UTA",
+                "Away"
+            )
+        )
         viewAdapter = ScheduleAdapter(data)
         viewManager = LinearLayoutManager(activity)
         recyclerView = rootView.findViewById(R.id.recyclerView)

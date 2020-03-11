@@ -1,10 +1,11 @@
-package com.example.balldontlie
+package com.example.balldontlie.schedule
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.balldontlie.R
 
 class ScheduleAdapter(private val scheduleData: ArrayList<Schedule>) :
     RecyclerView.Adapter<ScheduleAdapter.CardViewHolder>() {
@@ -16,10 +17,12 @@ class ScheduleAdapter(private val scheduleData: ArrayList<Schedule>) :
         val stadium = cardView.findViewById<TextView>(R.id.stadiumText)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScheduleAdapter.CardViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
         val cardView = LayoutInflater.from(
             parent.context).inflate(R.layout.past_schedule_card, parent, false) as CardView
-        return CardViewHolder(cardView)
+        return CardViewHolder(
+            cardView
+        )
     }
 
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
