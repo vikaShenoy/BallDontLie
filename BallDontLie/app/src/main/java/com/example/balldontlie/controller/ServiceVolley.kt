@@ -9,7 +9,7 @@ import org.json.JSONObject
 
 class ServiceVolley : ServiceInterface {
     val TAG = ServiceVolley::class.java.simpleName
-    val basePath = "https://your/backend/api/"
+    val basePath = "https://balldontlie.io/api/v1/"
 
     override fun get(path: String, params: JSONObject, completionHandler: (response: JSONObject?) -> Unit) {
         val jsonObjReq = object : JsonObjectRequest(Method.POST, basePath + path, params,
