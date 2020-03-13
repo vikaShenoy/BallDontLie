@@ -13,7 +13,10 @@ import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceInterface
 import com.example.balldontlie.controller.ServiceVolley
 import com.example.balldontlie.model.Game
+import com.example.balldontlie.model.Schedule
 import com.google.gson.Gson
+import com.google.gson.JsonArray
+import org.json.JSONArray
 import org.json.JSONObject
 
 // TODO: Rename parameter arguments, choose names that match
@@ -45,6 +48,7 @@ class ScheduleFragment : Fragment() {
 
         val service : ServiceInterface = ServiceVolley()
         val apiController: APIController = APIController(service)
+        // TODO - Get the team ID from drop down here
         val teamId = 11
         val data = getSchedulePreviousData(apiController, teamId)
         viewAdapter = ScheduleAdapter(data)
@@ -59,23 +63,51 @@ class ScheduleFragment : Fragment() {
         return rootView
     }
 
-    fun getSchedulePreviousData(controller: APIController, teamId: Int) : ArrayList<Schedule> {
-//        val path = "games?seasons[]=2019&team_ids[]=11&start_date=2019-10-22&end_date=2020-04-15"
-        val path = "games"
-        val params = JSONObject()
-        val teams = arrayListOf<Int>(teamId)
-        val seasons = arrayListOf<String>("2019")
-        params.put("start_date", "2019-10-22")
-        params.put("end_date", "2020-04-15")
-        params.put("team_ids", teams)
-        params.put("seasons", seasons)
-        controller.get(path, params) { response ->
-            // Data string is the array, need to iterate through it
-            val dataString: String = response?.get("data").toString()
-            val game = Gson().fromJson(dataString, Game::class.java)
-            Log.i("info", game.toString())
+    private fun getSchedulePreviousData(controller: APIController, teamId: Int) : MutableList<Schedule> {
+        val gameList: MutableList<Game> = ArrayList()
+
+        var path = "games?"
+        path += "start_date=2019-10-22"
+        path += "&end_date=2020-04-15"
+        path += "&seasons[]=2019"
+        path += "&team_ids[]=$teamId"
+
+        // TODO - fix the control flow so that the data is returned
+        controller.get(path=path, params= JSONObject()) { response ->
+            val gson = Gson()
+            val jsonObj = JSONObject(response.toString())
+            val gameArray = jsonObj.getJSONArray("data")
+            for (i in 0 until gameArray.length()) {
+                val game: Game = gson.fromJson(gameArray.getString(i), Game::class.java)
+                gameList.add(game)
+                Log.i("Checks", "Size after adding = ${gameList.size.toString()}")
+            }
         }
-        return ArrayList<Schedule>()
+        return gamesToSchedule(gameList, 11)
+    }
+
+    private fun gamesToSchedule(gameList : MutableList<Game>, teamId: Int) : MutableList<Schedule> {
+        val scheduleList: MutableList<Schedule> = ArrayList<Schedule>()
+        for (game in gameList) {
+            if (game.home_team?.id == teamId) {
+                val score: String = "${game.home_team_score}-${game.visitor_team_score}"
+                val schedule = Schedule(
+                    score=score,
+                    team=game.home_team.full_name,
+                    stadium=game.home_team.city
+                )
+                scheduleList.add(schedule)
+            } else {
+                val score: String = "${game.visitor_team_score}-${game.home_team_score}"
+                val schedule = Schedule(
+                    score=score,
+                    team= game.visitor_team!!.full_name,
+                    stadium= game.home_team!!.city
+                )
+                scheduleList.add(schedule)
+            }
+        }
+        return scheduleList
     }
 
     companion object {
