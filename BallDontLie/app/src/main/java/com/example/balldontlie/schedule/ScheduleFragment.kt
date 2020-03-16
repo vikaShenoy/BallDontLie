@@ -1,7 +1,6 @@
 package com.example.balldontlie.schedule
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,8 +12,6 @@ import com.example.balldontlie.controller.*
 import com.example.balldontlie.model.Game
 import com.example.balldontlie.model.Schedule
 import com.google.gson.Gson
-import com.google.gson.JsonArray
-import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -24,11 +21,11 @@ import org.json.JSONObject
  */
 class ScheduleFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
-    private lateinit var viewAdapter : RecyclerView.Adapter<*>
-    private lateinit var viewManager : RecyclerView.LayoutManager
+    private lateinit var viewAdapter: RecyclerView.Adapter<*>
+    private lateinit var viewManager: RecyclerView.LayoutManager
 
     private var teamId: Int = 11
-    private var scheduleData : MutableList<Schedule> = ArrayList<Schedule>()
+    private var scheduleData: MutableList<Schedule> = ArrayList<Schedule>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,27 +50,38 @@ class ScheduleFragment : Fragment() {
             adapter = viewAdapter
         }
 
-        val service : ServiceInterface = ServiceVolley()
+        val service: ServiceInterface = ServiceVolley()
         val apiController = APIController(service)
         // TODO - get teamID dynamically
-        getPastGames(controller=apiController, teamId=teamId)
+        val currentSeason = getCurrentSeason()
+        // TODO - get date ranges based on spinner
+        getGames(
+            controller = apiController,
+            teamId = teamId,
+            startDate = "2019-10-22",
+            endDate = "2020-04-15",
+            season = currentSeason
+        )
         return rootView
     }
 
-    private fun getPastGames(controller: APIController, teamId: Int) {
-        var path = "games?"
-        path += "start_date=2019-10-22"
-        path += "&end_date=2020-04-15"
-        path += "&seasons[]=2019"
-        path += "&team_ids[]=$teamId"
-        controller.get(path=path, params= JSONObject()) {
-            response -> setScheduleData(response)
+    private fun getGames(
+        controller: APIController,
+        teamId: Int,
+        startDate: String,
+        endDate: String,
+        season: Int
+    ) {
+        val path = "games?start_date=${startDate}&end_date=${
+        endDate}&seasons[]=${season}&team_ids[]=${teamId}"
+        controller.get(path = path, params = JSONObject()) { response ->
+            setScheduleData(response)
         }
     }
 
     private fun setScheduleData(response: JSONObject?) {
-        val gameData : ArrayList<Game> = ArrayList<Game>()
-        val data = getDataFromResponse(response)
+        val gameData: ArrayList<Game> = ArrayList<Game>()
+        val data = JSONObject(response.toString()).getJSONArray("data")
         for (i in 0 until data.length()) {
             gameData.add(Gson().fromJson(data.getString(i), Game::class.java))
         }
@@ -87,34 +95,9 @@ class ScheduleFragment : Fragment() {
         viewAdapter.notifyDataSetChanged()
     }
 
-    private fun gamesToSchedule(gameList : MutableList<Game>, teamId: Int) : MutableList<Schedule> {
-        val scheduleList: MutableList<Schedule> = ArrayList<Schedule>()
-        for (game in gameList) {
-            if (game.home_team?.id == teamId) {
-                val score: String = "${game.home_team_score} - ${game.visitor_team_score}"
-                val schedule = Schedule(
-                    score=score,
-                    team=game.visitor_team!!.full_name,
-                    stadium=game.home_team.city
-                )
-                scheduleList.add(schedule)
-            } else {
-                val score: String = "${game.visitor_team_score}-${game.home_team_score}"
-                val schedule = Schedule(
-                    score=score,
-                    team= game.home_team!!.full_name,
-                    stadium= game.home_team.city
-                )
-                scheduleList.add(schedule)
-            }
-        }
-        return scheduleList
-    }
 
-    private fun getDataFromResponse(response: JSONObject?) : JSONArray {
-        val json = JSONObject(response.toString())
-        return json.getJSONArray("data")
-    }
+
+
 
     companion object {
         /**
