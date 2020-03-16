@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.balldontlie.R
 import com.example.balldontlie.model.Schedule
 
-class ScheduleAdapter(private val scheduleData: MutableList<Schedule>) :
+class ScheduleAdapter(private val scheduleData: List<Schedule>) :
     RecyclerView.Adapter<ScheduleAdapter.CardViewHolder>() {
     // Replace test data with cards and such
 
