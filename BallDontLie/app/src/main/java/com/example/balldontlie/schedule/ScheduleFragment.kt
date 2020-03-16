@@ -1,10 +1,12 @@
 package com.example.balldontlie.schedule
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.balldontlie.R
@@ -12,6 +14,7 @@ import com.example.balldontlie.controller.*
 import com.example.balldontlie.model.Game
 import com.example.balldontlie.model.Schedule
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.fragment_schedule.*
 import org.json.JSONObject
 
 /**
@@ -23,6 +26,7 @@ class ScheduleFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
+    private lateinit var ctx: Context
 
     private var teamId: Int = 11
     private var scheduleData: MutableList<Schedule> = ArrayList<Schedule>()
@@ -35,6 +39,10 @@ class ScheduleFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        if (container != null) {
+            ctx = container.context
+        }
+
         // Inflate the layout for this fragment
         val rootView = inflater.inflate(
             R.layout.fragment_schedule,
@@ -49,12 +57,10 @@ class ScheduleFragment : Fragment() {
             layoutManager = viewManager
             adapter = viewAdapter
         }
-
         val service: ServiceInterface = ServiceVolley()
         val apiController = APIController(service)
-        // TODO - get teamID dynamically
         val currentSeason = getCurrentSeason()
-        // TODO - get date ranges based on spinner
+
         getGames(
             controller = apiController,
             teamId = teamId,
@@ -63,6 +69,27 @@ class ScheduleFragment : Fragment() {
             season = currentSeason
         )
         return rootView
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        // Populate the season spinner
+        ArrayAdapter.createFromResource(
+            ctx,
+            R.array.season_array,
+            android.R.layout.simple_spinner_item
+        ).also {adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            seasonSpinner.adapter = adapter
+        }
+
+        // Set a listener for the season spinner
+
+        // Init the team spinner
+        // Create an enum for team ids and names
+        // Populate the team spinner with names
+
+        // Set a listener for the team spinner
     }
 
     private fun getGames(
@@ -94,9 +121,6 @@ class ScheduleFragment : Fragment() {
         scheduleData.addAll(data)
         viewAdapter.notifyDataSetChanged()
     }
-
-
-
 
 
     companion object {
