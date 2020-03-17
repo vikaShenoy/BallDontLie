@@ -15,9 +15,11 @@ import com.example.balldontlie.R
 import com.example.balldontlie.controller.*
 import com.example.balldontlie.model.Game
 import com.example.balldontlie.model.Schedule
+import com.example.balldontlie.model.Team
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_schedule.*
 import org.json.JSONObject
+import java.text.FieldPosition
 
 /**
  * A simple [Fragment] subclass.
@@ -30,9 +32,12 @@ class ScheduleFragment : Fragment() {
     private lateinit var viewManager: RecyclerView.LayoutManager
     private lateinit var controller: APIController
     private lateinit var ctx: Context
-
     private var teamId: Int = 11
     private var scheduleData: MutableList<Schedule> = ArrayList<Schedule>()
+
+    private var teamMap = mutableMapOf<String, Int>()
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +68,11 @@ class ScheduleFragment : Fragment() {
         val service: ServiceInterface = ServiceVolley()
         controller = APIController(service)
 
+        // Call API to fill a map of {"HOU"->11...}
+        controller.get("teams", JSONObject()) { response ->
+            fillTeamMap(response)
+        }
+
         getGames(
             controller = controller,
             teamId = teamId,
@@ -71,6 +81,15 @@ class ScheduleFragment : Fragment() {
         )
         return rootView
     }
+
+    private fun fillTeamMap(response: JSONObject?) {
+        val data = JSONObject(response.toString()).getJSONArray("data")
+        for (i in 0 until data.length()) {
+            val team : Team = Gson().fromJson(data.getString(i), Team::class.java)
+            teamMap[team.abbreviation] = team.id
+        }
+    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -90,42 +109,43 @@ class ScheduleFragment : Fragment() {
                 position: Int,
                 idp3: Long
             ) {
-                val selectedItem = parent?.getItemAtPosition(position)
-                var startDate = ""
-                var endDate = ""
-
-                if (selectedItem == "Previous") {
-                    startDate = getSeasonStartDate()
-                    endDate = getCurrentDate()
-                } else if (selectedItem == "Current") {
-                    startDate = getCurrentDate()
-                    endDate = startDate
-                } else if (selectedItem == "Upcoming") {
-                    startDate = getCurrentDate()
-                    endDate = getSeasonEndDate()
+                if (parent != null) {
+                    seasonSelected(parent, position)
                 }
-
-                getGames(
-                    controller = controller,
-                    teamId = teamId,
-                    startDate = startDate,
-                    endDate = endDate
-                )
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
 
             }
         }
-
-        // Init the team spinner
-        // Create an enum for team ids and names
-        // Populate the team spinner with names
-        // Set a listener for the team spinner
+        // TODO: team spinner functionality
+        // teamMap = {"HOU": 11 ... }
+        // have the teamId variable
+        // set an adapter for the team listener to repopulate cards based on selected teams
     }
 
-    private fun seasonSelected() {
+    private fun seasonSelected(parent: AdapterView<*>, position: Int) {
+        val selectedItem = parent.getItemAtPosition(position)
+        var startDate = ""
+        var endDate = ""
 
+        if (selectedItem == "Previous") {
+            startDate = getSeasonStartDate()
+            endDate = getCurrentDate()
+        } else if (selectedItem == "Current") {
+            startDate = getCurrentDate()
+            endDate = startDate
+        } else if (selectedItem == "Upcoming") {
+            startDate = getCurrentDate()
+            endDate = getSeasonEndDate()
+        }
+
+        getGames(
+            controller = controller,
+            teamId = teamId,
+            startDate = startDate,
+            endDate = endDate
+        )
     }
 
     private fun getGames(
