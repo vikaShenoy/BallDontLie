@@ -136,6 +136,7 @@ class ScheduleFragment : Fragment() {
     ) {
         val path = "games?start_date=${startDate}&end_date=${
         endDate}&team_ids[]=${teamId}"
+        Log.i("check", path)
         controller.get(path = path, params = JSONObject()) { response ->
             setScheduleData(response)
         }

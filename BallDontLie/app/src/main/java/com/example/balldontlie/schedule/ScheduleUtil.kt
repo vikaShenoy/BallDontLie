@@ -46,7 +46,7 @@ fun getCurrentDate() : String {
 }
 
 /**
- * Returns the start date of the current nba season. Seasons start on 21 Oct and run till June.
+ * Returns the start date of the current nba season. Seasons start on 22 Oct and run till 21 June.
  * Format is a string of yyyy-MM-dd as this is what the balldontlie api takes for date params.
  */
 fun getSeasonStartDate() : String{
@@ -54,12 +54,14 @@ fun getSeasonStartDate() : String{
     val currentYear =  Calendar.getInstance().get(Calendar.YEAR)
     val pattern = "MM-dd"
     val formatter = SimpleDateFormat(pattern)
-    val formattedDate = formatter.format(currentDate)
+    val formattedCurrentDate = formatter.format(currentDate)
+
+    val seasonStartDate = "10-22"
     val seasonEndDate = "06-21"
-    if (formattedDate < seasonEndDate) {
-        return "${currentYear-1}-${formattedDate}"
+    if (formattedCurrentDate < seasonEndDate) {
+        return "${currentYear-1}-${seasonStartDate}"
     }
-    return "${currentYear}-${formattedDate}"
+    return "${currentYear}-${seasonStartDate}"
 }
 
 /**
@@ -74,7 +76,7 @@ fun getSeasonEndDate() : String {
     val formattedDate = formatter.format(currentDate)
     val seasonEndDate = "06-21"
     if (formattedDate > seasonEndDate) {
-        return "${currentYear+1}-${formattedDate}"
+        return "${currentYear+1}-${seasonEndDate}"
     }
-    return "${currentYear}-${formattedDate}"
+    return "${currentYear}-${seasonEndDate}"
 }
