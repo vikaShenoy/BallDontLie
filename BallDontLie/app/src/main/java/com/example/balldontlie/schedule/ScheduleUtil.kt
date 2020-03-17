@@ -35,18 +35,46 @@ fun gamesToSchedule(gameList: MutableList<Game>, teamId: Int): MutableList<Sched
 }
 
 /**
- * Gets the current NBA season.
- * The most recent season ran from October 22 - June 21 (including playoffs), so if the current
- * date is before June 21, then the season will be the previous year, else it's the current year.
+ * Return the current date.
+ * Format is a string of yyyy-MM-dd as this is what the balldontlie api takes for date params.
  */
-fun getCurrentSeason() : Int {
+fun getCurrentDate() : String {
     val currentDate = Calendar.getInstance().time
-    val formatter = SimpleDateFormat("MM-dd")
-    val formattedDate = formatter.format(currentDate)
+    val apiDatePattern = "yyyy-MM-dd"
+    val formatter = SimpleDateFormat(apiDatePattern)
+    return formatter.format(currentDate)
+}
+
+/**
+ * Returns the start date of the current nba season. Seasons start on 21 Oct and run till June.
+ * Format is a string of yyyy-MM-dd as this is what the balldontlie api takes for date params.
+ */
+fun getSeasonStartDate() : String{
+    val currentDate = Calendar.getInstance().time
     val currentYear =  Calendar.getInstance().get(Calendar.YEAR)
+    val pattern = "MM-dd"
+    val formatter = SimpleDateFormat(pattern)
+    val formattedDate = formatter.format(currentDate)
     val seasonEndDate = "06-21"
     if (formattedDate < seasonEndDate) {
-        return currentYear - 1
+        return "${currentYear-1}-${formattedDate}"
     }
-    return currentYear
+    return "${currentYear}-${formattedDate}"
+}
+
+/**
+ * Returns the end date of the current nba season. Seasons start on 21 Oct and run till June.
+ * Format is a string of yyyy-MM-dd as this is what the balldontlie api takes for date params.
+ */
+fun getSeasonEndDate() : String {
+    val currentDate = Calendar.getInstance().time
+    val currentYear =  Calendar.getInstance().get(Calendar.YEAR)
+    val pattern = "MM-dd"
+    val formatter = SimpleDateFormat(pattern)
+    val formattedDate = formatter.format(currentDate)
+    val seasonEndDate = "06-21"
+    if (formattedDate > seasonEndDate) {
+        return "${currentYear+1}-${formattedDate}"
+    }
+    return "${currentYear}-${formattedDate}"
 }

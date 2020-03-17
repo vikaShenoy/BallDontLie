@@ -2,10 +2,12 @@ package com.example.balldontlie.schedule
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,6 +28,7 @@ class ScheduleFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
+    private lateinit var controller: APIController
     private lateinit var ctx: Context
 
     private var teamId: Int = 11
@@ -58,49 +61,81 @@ class ScheduleFragment : Fragment() {
             adapter = viewAdapter
         }
         val service: ServiceInterface = ServiceVolley()
-        val apiController = APIController(service)
-        val currentSeason = getCurrentSeason()
+        controller = APIController(service)
 
         getGames(
-            controller = apiController,
+            controller = controller,
             teamId = teamId,
-            startDate = "2019-10-22",
-            endDate = "2020-04-15",
-            season = currentSeason
+            startDate = getCurrentDate(),
+            endDate = getSeasonEndDate()
         )
         return rootView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Populate the season spinner
         ArrayAdapter.createFromResource(
             ctx,
             R.array.season_array,
             android.R.layout.simple_spinner_item
-        ).also {adapter ->
+        ).also { adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             seasonSpinner.adapter = adapter
         }
 
-        // Set a listener for the season spinner
+        seasonSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                idp3: Long
+            ) {
+                val selectedItem = parent?.getItemAtPosition(position)
+                var startDate = ""
+                var endDate = ""
+
+                if (selectedItem == "Previous") {
+                    startDate = getSeasonStartDate()
+                    endDate = getCurrentDate()
+                } else if (selectedItem == "Current") {
+                    startDate = getCurrentDate()
+                    endDate = startDate
+                } else if (selectedItem == "Upcoming") {
+                    startDate = getCurrentDate()
+                    endDate = getSeasonEndDate()
+                }
+
+                getGames(
+                    controller = controller,
+                    teamId = teamId,
+                    startDate = startDate,
+                    endDate = endDate
+                )
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+
+            }
+        }
 
         // Init the team spinner
         // Create an enum for team ids and names
         // Populate the team spinner with names
-
         // Set a listener for the team spinner
+    }
+
+    private fun seasonSelected() {
+
     }
 
     private fun getGames(
         controller: APIController,
         teamId: Int,
         startDate: String,
-        endDate: String,
-        season: Int
+        endDate: String
     ) {
         val path = "games?start_date=${startDate}&end_date=${
-        endDate}&seasons[]=${season}&team_ids[]=${teamId}"
+        endDate}&team_ids[]=${teamId}"
         controller.get(path = path, params = JSONObject()) { response ->
             setScheduleData(response)
         }
