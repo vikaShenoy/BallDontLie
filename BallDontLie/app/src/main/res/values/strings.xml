@@ -4,6 +4,11 @@
     <string name="menu_performance">Performance</string>
     <string name="menu_schedule">Schedule</string>
 
+    <string name="season_past">Previous</string>
+    <string name="season_present">Today</string>
+    <string name="season_future">Upcoming</string>
+
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

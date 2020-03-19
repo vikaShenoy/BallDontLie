@@ -32,16 +32,13 @@ class ScheduleFragment : Fragment() {
     private lateinit var viewManager: RecyclerView.LayoutManager
     private lateinit var controller: APIController
     private lateinit var ctx: Context
-    private var teamId: Int = 11
-    private var scheduleData: MutableList<Schedule> = ArrayList<Schedule>()
+    private var scheduleData = ArrayList<Schedule>()
 
     private var teamMap = mutableMapOf<String, Int>()
 
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    private var teamId = 11
+    private var startDate = getCurrentDate()
+    private var endDate = getSeasonEndDate()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -73,26 +70,17 @@ class ScheduleFragment : Fragment() {
             fillTeamMap(response)
         }
 
-        getGames(
-            controller = controller,
-            teamId = teamId,
-            startDate = getCurrentDate(),
-            endDate = getSeasonEndDate()
-        )
+        refreshSchedule()
         return rootView
-    }
-
-    private fun fillTeamMap(response: JSONObject?) {
-        val data = JSONObject(response.toString()).getJSONArray("data")
-        for (i in 0 until data.length()) {
-            val team : Team = Gson().fromJson(data.getString(i), Team::class.java)
-            teamMap[team.abbreviation] = team.id
-        }
     }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initSeasonSpinner()
+    }
+
+    private fun initSeasonSpinner() {
         ArrayAdapter.createFromResource(
             ctx,
             R.array.season_array,
@@ -109,51 +97,74 @@ class ScheduleFragment : Fragment() {
                 position: Int,
                 idp3: Long
             ) {
-                if (parent != null) {
-                    seasonSelected(parent, position)
-                }
+                val selectedSeason = parent?.getItemAtPosition(position) as String
+                setSeason(selectedSeason)
+                refreshSchedule()
             }
 
-            override fun onNothingSelected(p0: AdapterView<*>?) {
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
+        }
+    }
 
+    private fun initTeamSpinner() {
+        ArrayAdapter(
+            ctx,
+            android.R.layout.simple_spinner_item,
+            teamMap.keys.toTypedArray()
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
+            teamSpinner.adapter = adapter
+        }
+        teamSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                idp3: Long
+            ) {
+                // Looks like 'HOU' 'BOS' etc at the moment
+                val selectedTeam = parent?.getItemAtPosition(position) as String
+                setTeamId(selectedTeam)
+                refreshSchedule()
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
+        }
+
+    }
+
+    private fun fillTeamMap(response: JSONObject?) {
+        val data = JSONObject(response.toString()).getJSONArray("data")
+        for (i in 0 until data.length()) {
+            val team: Team = Gson().fromJson(data.getString(i), Team::class.java)
+            teamMap[team.abbreviation] = team.id
+        }
+        initTeamSpinner()
+    }
+
+    private fun setSeason(selectedSeason: String) {
+        when (selectedSeason) {
+            getString(R.string.season_past) -> {
+                startDate = getSeasonStartDate()
+                endDate = getCurrentDate()
+            }
+            getString(R.string.season_present) -> {
+                startDate = getCurrentDate()
+                endDate = getCurrentDate()
+            }
+            getString(R.string.season_future) -> {
+                startDate = getCurrentDate()
+                endDate = getSeasonEndDate()
             }
         }
-        // TODO: team spinner functionality
-        // teamMap = {"HOU": 11 ... }
-        // have the teamId variable
-        // set an adapter for the team listener to repopulate cards based on selected teams
     }
 
-    private fun seasonSelected(parent: AdapterView<*>, position: Int) {
-        val selectedItem = parent.getItemAtPosition(position)
-        var startDate = ""
-        var endDate = ""
-
-        if (selectedItem == "Previous") {
-            startDate = getSeasonStartDate()
-            endDate = getCurrentDate()
-        } else if (selectedItem == "Current") {
-            startDate = getCurrentDate()
-            endDate = startDate
-        } else if (selectedItem == "Upcoming") {
-            startDate = getCurrentDate()
-            endDate = getSeasonEndDate()
-        }
-
-        getGames(
-            controller = controller,
-            teamId = teamId,
-            startDate = startDate,
-            endDate = endDate
-        )
+    private fun setTeamId(selectedTeam: String) {
+        teamId = teamMap[selectedTeam]!!
+        refreshSchedule()
     }
 
-    private fun getGames(
-        controller: APIController,
-        teamId: Int,
-        startDate: String,
-        endDate: String
-    ) {
+    private fun refreshSchedule() {
         val path = "games?start_date=${startDate}&end_date=${
         endDate}&team_ids[]=${teamId}"
         Log.i("check", path)
@@ -163,7 +174,7 @@ class ScheduleFragment : Fragment() {
     }
 
     private fun setScheduleData(response: JSONObject?) {
-        val gameData: ArrayList<Game> = ArrayList<Game>()
+        val gameData: ArrayList<Game> = ArrayList()
         val data = JSONObject(response.toString()).getJSONArray("data")
         for (i in 0 until data.length()) {
             gameData.add(Gson().fromJson(data.getString(i), Game::class.java))
@@ -177,7 +188,6 @@ class ScheduleFragment : Fragment() {
         scheduleData.addAll(data)
         viewAdapter.notifyDataSetChanged()
     }
-
 
     companion object {
         /**
