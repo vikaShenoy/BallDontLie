@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         scrollToScreen(defaultScreen)
         selectBottomNavigationViewMenuItem(defaultScreen.menuItemId)
         supportActionBar?.setTitle(defaultScreen.titleStringId)
+        supportActionBar?.hide()
 
         // Listener for item selection in bottom nav menu
         bottomNavigationView.setOnNavigationItemSelectedListener(this)

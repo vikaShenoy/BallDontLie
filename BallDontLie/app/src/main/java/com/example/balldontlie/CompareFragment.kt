@@ -1,15 +1,19 @@
 package com.example.balldontlie
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import com.example.balldontlie.controller.APIController
+import com.example.balldontlie.controller.ServiceInterface
+import com.example.balldontlie.controller.ServiceVolley
+import com.example.balldontlie.model.Player
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import kotlinx.android.synthetic.main.fragment_compare.*
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
@@ -17,24 +21,41 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class CompareFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var ctx: Context
+    private lateinit var controller: APIController
+    private var displayedPlayers: List<Player> = ArrayList<Player>()
+    private var selectedPlayers: List<Player> = ArrayList<Player>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        if (container != null) {
+            ctx = container.context
+        }
+        val service: ServiceInterface = ServiceVolley()
+        controller = APIController(service)
+        initSearch()
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_compare, container, false)
+    }
+
+    /**
+     * Initalise the adapters and views for searching for players.
+     */
+    private fun initSearch() {
+        ArrayAdapter(
+            ctx,
+            android.R.layout.simple_list_item_1,
+            displayedPlayers
+        // TODO - Set an on item click listener for when they tap on a player
+        // TODO - Add vibration here
+        ).also { adapter -> searchListView.adapter = adapter }
+
+        // TODO - add the rxtextview handling for searching to the search widget
+        val compositeDisposable = CompositeDisposable()
+
     }
 
     companion object {
@@ -50,10 +71,7 @@ class CompareFragment : Fragment() {
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             CompareFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+                arguments = Bundle().apply {}
             }
     }
 }

@@ -1,14 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CompareFragment">
+
+  <EditText
+      android:id="@+id/searchEditText"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="8dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="8dp"
+      android:layout_marginBottom="8dp"
+      android:autofillHints=""
+      android:drawableStart="@android:drawable/ic_menu_search"
+      android:ems="10"
+      android:hint="@string/search_hint"
+      android:inputType="textPersonName"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <ListView
+      android:id="@+id/searchListView"
+      style="@android:style/Widget.ListView.Menu"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="8dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="8dp"
+      android:layout_marginBottom="8dp"
+      app:layout_constraintBottom_toTopOf="@id/statsTable"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="0.0"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/searchEditText">
+
+  </ListView>
+
+  <TableLayout
+      android:id="@+id/statsTable"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_marginStart="8dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="8dp"
+      android:layout_marginBottom="8dp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/searchListView">
+
+    <TableRow
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".CompareFragment">
+        android:layout_height="match_parent">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@string/hello_blank_fragment" />
+      <TextView
+          android:layout_weight=".3"
+          android:gravity="center"
+          android:text="Westbrook" />
 
-</FrameLayout>
+      <TextView
+          android:layout_weight=".3"
+          android:gravity="center"
+          android:text="Stat" />
+
+      <TextView
+          android:layout_weight=".3"
+          android:gravity="center"
+          android:text="Durant" />
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+      <TextView
+          android:layout_weight=".3"
+          android:gravity="center"
+          android:text="30.1" />
+
+      <TextView
+          android:layout_weight=".3"
+          android:gravity="center"
+          android:text="Points" />
+
+      <TextView
+          android:layout_weight=".3"
+          android:gravity="center"
+          android:text="25.3" />
+
+    </TableRow>
+
+
+  </TableLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

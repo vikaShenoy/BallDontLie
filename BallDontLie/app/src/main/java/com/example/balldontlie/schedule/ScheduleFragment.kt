@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.balldontlie.R
@@ -151,6 +152,8 @@ class ScheduleFragment : Fragment() {
             getString(R.string.season_present) -> {
                 startDate = getCurrentDate()
                 endDate = getCurrentDate()
+                Toast.makeText(ctx, "Enjoy today's games!", Toast.LENGTH_SHORT).show()
+
             }
             getString(R.string.season_future) -> {
                 startDate = getCurrentDate()
@@ -167,7 +170,6 @@ class ScheduleFragment : Fragment() {
     private fun refreshSchedule() {
         val path = "games?start_date=${startDate}&end_date=${
         endDate}&team_ids[]=${teamId}"
-        Log.i("check", path)
         controller.get(path = path, params = JSONObject()) { response ->
             setScheduleData(response)
         }
