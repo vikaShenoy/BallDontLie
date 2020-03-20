@@ -2,16 +2,24 @@ package com.example.balldontlie
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.EditText
+import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.widget.doAfterTextChanged
 import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceInterface
 import com.example.balldontlie.controller.ServiceVolley
 import com.example.balldontlie.model.Player
 import kotlinx.android.synthetic.main.fragment_compare.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 
 /**
@@ -52,11 +60,60 @@ class CompareFragment : Fragment() {
             ctx,
             android.R.layout.simple_list_item_1,
             displayedPlayers
-        // TODO - Set an on item click listener for when they tap on a player
-        // TODO - Add vibration here
+            // TODO - Set an on item click listener for when they tap on a player
+            // TODO - Add vibration here
         ).also { adapter -> searchListView.adapter = adapter }
 
-        // TODO - add the rxtextview handling for searching to the search widget
+        fun EditText.afterTextChangedDebounce(delayMillis: Long, handler: (String) -> Unit) {
+            var oldSearch = ""
+            var debounceJob: Job? = null
+            val uiScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+            this.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    if (s != null) {
+                        val newSearch = s.toString()
+                        debounceJob?.cancel()
+                        if (newSearch != oldSearch) {
+                            oldSearch = newSearch
+                            debounceJob = uiScope.launch {
+                                delay(delayMillis)
+                                if (oldSearch == newSearch) {
+                                    handler(newSearch)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                override fun beforeTextChanged(
+                    cs: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
+
+                override fun onTextChanged(
+                    cs: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int
+                ) {
+                }
+            })
+        }
+
+        searchEditText.afterTextChangedDebounce(1200) { s ->
+            Log.i("checks", s)
+            populateSearch(s)
+        }
+    }
+
+    /**
+     * Make an api call to get players which match the search term.
+     * Populate the search list view with these players.
+     */
+    private fun populateSearch(searchTerm: String) {
 
     }
 
