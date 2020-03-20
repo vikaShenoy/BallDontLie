@@ -11,7 +11,6 @@ import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceInterface
 import com.example.balldontlie.controller.ServiceVolley
 import com.example.balldontlie.model.Player
-import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_compare.*
 
 
@@ -36,9 +35,13 @@ class CompareFragment : Fragment() {
         }
         val service: ServiceInterface = ServiceVolley()
         controller = APIController(service)
-        initSearch()
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_compare, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initSearch()
     }
 
     /**
@@ -54,7 +57,6 @@ class CompareFragment : Fragment() {
         ).also { adapter -> searchListView.adapter = adapter }
 
         // TODO - add the rxtextview handling for searching to the search widget
-        val compositeDisposable = CompositeDisposable()
 
     }
 
