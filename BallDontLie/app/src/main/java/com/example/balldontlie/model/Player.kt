@@ -10,4 +10,11 @@ data class Player(
     val weight_pounds: Int = 0,
     val team: Team? = null
 ) {
+
+    override fun toString(): String {
+        if (team != null) {
+            return "$first_name $last_name - ${team.abbreviation}"
+        }
+        return "$first_name $last_name"
+    }
 }

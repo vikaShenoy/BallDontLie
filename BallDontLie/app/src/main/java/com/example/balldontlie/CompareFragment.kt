@@ -17,8 +17,10 @@ import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceInterface
 import com.example.balldontlie.controller.ServiceVolley
 import com.example.balldontlie.model.Player
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_compare.*
 import kotlinx.coroutines.*
+import org.json.JSONObject
 import kotlin.coroutines.CoroutineContext
 
 
@@ -31,8 +33,8 @@ class CompareFragment : Fragment() {
 
     private lateinit var ctx: Context
     private lateinit var controller: APIController
-    private var displayedPlayers: List<Player> = ArrayList<Player>()
-    private var selectedPlayers: List<Player> = ArrayList<Player>()
+    private var displayedPlayers: MutableList<Player> = ArrayList<Player>()
+    private var selectedPlayers: MutableList<Player> = ArrayList<Player>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -101,20 +103,26 @@ class CompareFragment : Fragment() {
                 ) {
                 }
             })
+
+            searchListView.onItemClickListener
         }
 
-        searchEditText.afterTextChangedDebounce(1200) { s ->
-            Log.i("checks", s)
-            populateSearch(s)
+        searchEditText.afterTextChangedDebounce(1200) { searchTerm ->
+            controller.get("players?search=$searchTerm", JSONObject()) { response ->
+                selectedPlayers.clear()
+                populateSearch(response)
+            }
         }
     }
 
     /**
-     * Make an api call to get players which match the search term.
      * Populate the search list view with these players.
      */
-    private fun populateSearch(searchTerm: String) {
-
+    private fun populateSearch(response: JSONObject?) {
+        val data = JSONObject(response.toString()).getJSONArray("data")
+        for (i in 0 until data.length()) {
+            displayedPlayers.add(Gson().fromJson(data.getString(i), Player::class.java))
+        }
     }
 
     companion object {
