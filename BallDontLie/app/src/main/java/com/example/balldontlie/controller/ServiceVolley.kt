@@ -14,11 +14,11 @@ class ServiceVolley : ServiceInterface {
     override fun get(path: String, params: JSONObject, completionHandler: (response: JSONObject?) -> Unit) {
         val jsonObjReq = object : JsonObjectRequest(Method.POST, basePath + path, params,
             Response.Listener<JSONObject> { response ->
-                Log.d(TAG, "/post request OK! Response: $response")
+                Log.d(TAG, "/get request OK! Response: $response")
                 completionHandler(response)
             },
             Response.ErrorListener { error ->
-                VolleyLog.e(TAG, "/post request fail! Error: ${error.message}")
+                VolleyLog.e(TAG, "/get request fail! Error: ${error.message}")
                 completionHandler(null)
             }) {}
         BackendVolley.instance?.addToRequestQueue(jsonObjReq, TAG)

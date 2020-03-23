@@ -1,18 +1,28 @@
 package com.example.balldontlie
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.transition.Slide
+import android.transition.TransitionManager
 import android.util.Log
-import androidx.fragment.app.Fragment
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.EditText
-import androidx.appcompat.widget.AppCompatEditText
-import androidx.core.widget.doAfterTextChanged
+import android.widget.LinearLayout
+import android.widget.PopupWindow
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.getSystemService
+import androidx.fragment.app.Fragment
+import androidx.transition.Transition
 import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceInterface
 import com.example.balldontlie.controller.ServiceVolley
@@ -21,7 +31,6 @@ import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_compare.*
 import kotlinx.coroutines.*
 import org.json.JSONObject
-import kotlin.coroutines.CoroutineContext
 
 
 /**
@@ -33,38 +42,52 @@ class CompareFragment : Fragment() {
 
     private lateinit var ctx: Context
     private lateinit var controller: APIController
+    private lateinit var searchAdapter: ArrayAdapter<Player>
     private var displayedPlayers: MutableList<Player> = ArrayList<Player>()
     private var selectedPlayers: MutableList<Player> = ArrayList<Player>()
+
+    private lateinit var myInflater: LayoutInflater
+    private lateinit var searchDialog: AlertDialog
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        if (container != null) {
-            ctx = container.context
-        }
+        myInflater = inflater
+        ctx = container!!.context
         val service: ServiceInterface = ServiceVolley()
         controller = APIController(service)
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_compare, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initSearch()
+        //initSearch()
+        searchButton.setOnClickListener { showSearchDialog() }
+    }
+
+    private fun showSearchDialog() {
+        val dialogView: View = myInflater.inflate(R.layout.search_popup, null)
+        // Handle click events etc
+        val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(ctx)
+        // Dismiss listener
+        dialogBuilder.setView(dialogView)
+        searchDialog = dialogBuilder.create()
+        //alertDialog.window!!.getAttributes().windowAnimations = R.style.PauseDialogAnimation
+        searchDialog.show()
     }
 
     /**
      * Initalise the adapters and views for searching for players.
      */
     private fun initSearch() {
-        ArrayAdapter(
-            ctx,
-            android.R.layout.simple_list_item_1,
-            displayedPlayers
-            // TODO - Set an on item click listener for when they tap on a player
-            // TODO - Add vibration here
-        ).also { adapter -> searchListView.adapter = adapter }
+//        searchAdapter = ArrayAdapter(
+//            ctx,
+//            android.R.layout.simple_list_item_1,
+//            displayedPlayers
+//        ).also { adapter -> searchListView.adapter = adapter }
+
+        // TODO - vibration and on click listener for the list
 
         fun EditText.afterTextChangedDebounce(delayMillis: Long, handler: (String) -> Unit) {
             var oldSearch = ""
@@ -104,25 +127,25 @@ class CompareFragment : Fragment() {
                 }
             })
 
-            searchListView.onItemClickListener
         }
 
-        searchEditText.afterTextChangedDebounce(1200) { searchTerm ->
-            controller.get("players?search=$searchTerm", JSONObject()) { response ->
-                selectedPlayers.clear()
-                populateSearch(response)
-            }
-        }
+//        searchEditText.afterTextChangedDebounce(500) { searchTerm ->
+//            controller.get("players?search=$searchTerm", JSONObject()) { response ->
+//                populateSearch(response)
+//            }
+//        }
     }
 
     /**
      * Populate the search list view with these players.
      */
     private fun populateSearch(response: JSONObject?) {
+        displayedPlayers.clear()
         val data = JSONObject(response.toString()).getJSONArray("data")
         for (i in 0 until data.length()) {
             displayedPlayers.add(Gson().fromJson(data.getString(i), Player::class.java))
         }
+        searchAdapter.notifyDataSetChanged()
     }
 
     companion object {
