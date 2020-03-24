@@ -35,6 +35,63 @@
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintHorizontal_bias="0.0"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/searchEditText" />
+      app:layout_constraintTop_toBottomOf="@+id/searchEditText">
+
+  </ListView>
+
+  <androidx.cardview.widget.CardView
+      android:id="@+id/player1Card"
+      android:layout_width="0dp"
+      android:layout_height="50dp"
+      android:layout_marginStart="8dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="8dp"
+      app:cardElevation="10dp"
+      app:layout_constraintEnd_toStartOf="@id/player2Card"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/searchListView">
+
+    <TextView
+        android:id="@+id/player1Text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+  </androidx.cardview.widget.CardView>
+
+  <androidx.cardview.widget.CardView
+      android:id="@+id/player2Card"
+      android:layout_width="0dp"
+      android:layout_height="50dp"
+      android:layout_marginStart="8dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="8dp"
+      app:cardElevation="10dp"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@id/player1Card"
+      app:layout_constraintTop_toBottomOf="@+id/searchListView">
+
+    <TextView
+        android:id="@+id/player2Text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+  </androidx.cardview.widget.CardView>
+
+
+  <Button
+      android:id="@+id/confirmButton"
+      android:layout_width="0dp"
+      android:layout_height="50dp"
+      android:layout_marginStart="8dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="8dp"
+      android:layout_marginBottom="8dp"
+      android:text="@string/confirm_button"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/player1Card"
+      app:layout_constraintBottom_toBottomOf="parent"
+      tools:layout_editor_absoluteY="460dp" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
