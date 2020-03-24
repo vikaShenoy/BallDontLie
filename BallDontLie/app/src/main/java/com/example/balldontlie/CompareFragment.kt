@@ -2,25 +2,24 @@ package com.example.balldontlie
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
-import android.os.Build
+import android.content.Context.VIBRATOR_SERVICE
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.text.Editable
 import android.text.TextWatcher
-import android.transition.Slide
 import android.transition.TransitionManager
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.PopupWindow
+import android.widget.*
+import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.getSystemService
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.transition.Transition
 import com.example.balldontlie.controller.APIController
@@ -29,6 +28,7 @@ import com.example.balldontlie.controller.ServiceVolley
 import com.example.balldontlie.model.Player
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_compare.*
+import kotlinx.android.synthetic.main.search_popup.*
 import kotlinx.coroutines.*
 import org.json.JSONObject
 
@@ -49,12 +49,16 @@ class CompareFragment : Fragment() {
     private lateinit var myInflater: LayoutInflater
     private lateinit var searchDialog: AlertDialog
 
+    private lateinit var vibrator: Vibrator
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         myInflater = inflater
         ctx = container!!.context
+        vibrator = ctx.getSystemService(VIBRATOR_SERVICE) as Vibrator
         val service: ServiceInterface = ServiceVolley()
         controller = APIController(service)
         return inflater.inflate(R.layout.fragment_compare, container, false)
@@ -62,78 +66,85 @@ class CompareFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //initSearch()
         searchButton.setOnClickListener { showSearchDialog() }
     }
 
     private fun showSearchDialog() {
-        val dialogView: View = myInflater.inflate(R.layout.search_popup, null)
-        // Handle click events etc
+        val searchPopup: View = myInflater.inflate(R.layout.search_popup, null)
+        val searchResultList = searchPopup.findViewById<ListView>(R.id.searchListView)
+        val searchText = searchPopup.findViewById<EditText>(R.id.searchEditText)
+        val player1Card: CardView = searchPopup.findViewById<CardView>(R.id.player1Card)
+        val player2Card: CardView = searchPopup.findViewById<CardView>(R.id.player2Card)
+
+        // Event handling for widgets
+        searchAdapter = ArrayAdapter(
+            ctx,
+            android.R.layout.simple_list_item_1,
+            displayedPlayers
+        ).also { adapter -> searchResultList.adapter = adapter }
+
+        val searchDelay: Long = 500
+        searchText.afterTextChangedDebounce(searchDelay) { searchTerm ->
+            controller.get("players?search=$searchTerm", JSONObject()) { response ->
+                populateSearch(response)
+            }
+        }
+
+        searchResultList.setOnItemClickListener { parent, view, position, id ->
+            val vibrateLength: Long = 500
+            vibrator.vibrate(VibrationEffect.createOneShot(
+                vibrateLength, VibrationEffect.DEFAULT_AMPLITUDE))
+            val selectedPlayer: Player = displayedPlayers[position]
+        }
+
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(ctx)
-        // Dismiss listener
-        dialogBuilder.setView(dialogView)
+        dialogBuilder.setOnDismissListener {
+            Toast.makeText(ctx, "Dismissed", Toast.LENGTH_SHORT).show()
+        }
+
+        dialogBuilder.setView(searchPopup)
         searchDialog = dialogBuilder.create()
         //alertDialog.window!!.getAttributes().windowAnimations = R.style.PauseDialogAnimation
         searchDialog.show()
     }
 
-    /**
-     * Initalise the adapters and views for searching for players.
-     */
-    private fun initSearch() {
-//        searchAdapter = ArrayAdapter(
-//            ctx,
-//            android.R.layout.simple_list_item_1,
-//            displayedPlayers
-//        ).also { adapter -> searchListView.adapter = adapter }
-
-        // TODO - vibration and on click listener for the list
-
-        fun EditText.afterTextChangedDebounce(delayMillis: Long, handler: (String) -> Unit) {
-            var oldSearch = ""
-            var debounceJob: Job? = null
-            val uiScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-            this.addTextChangedListener(object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    if (s != null) {
-                        val newSearch = s.toString()
-                        debounceJob?.cancel()
-                        if (newSearch != oldSearch) {
-                            oldSearch = newSearch
-                            debounceJob = uiScope.launch {
-                                delay(delayMillis)
-                                if (oldSearch == newSearch) {
-                                    handler(newSearch)
-                                }
+    private fun EditText.afterTextChangedDebounce(delayMillis: Long, handler: (String) -> Unit) {
+        var oldSearch = ""
+        var debounceJob: Job? = null
+        val uiScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+        this.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                if (s != null) {
+                    val newSearch = s.toString()
+                    debounceJob?.cancel()
+                    if (newSearch != oldSearch) {
+                        oldSearch = newSearch
+                        debounceJob = uiScope.launch {
+                            delay(delayMillis)
+                            if (oldSearch == newSearch) {
+                                handler(newSearch)
                             }
                         }
                     }
                 }
+            }
 
-                override fun beforeTextChanged(
-                    cs: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int
-                ) {
-                }
+            override fun beforeTextChanged(
+                cs: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+            }
 
-                override fun onTextChanged(
-                    cs: CharSequence?,
-                    start: Int,
-                    before: Int,
-                    count: Int
-                ) {
-                }
-            })
-
-        }
-
-//        searchEditText.afterTextChangedDebounce(500) { searchTerm ->
-//            controller.get("players?search=$searchTerm", JSONObject()) { response ->
-//                populateSearch(response)
-//            }
-//        }
+            override fun onTextChanged(
+                cs: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+            }
+        })
     }
 
     /**
