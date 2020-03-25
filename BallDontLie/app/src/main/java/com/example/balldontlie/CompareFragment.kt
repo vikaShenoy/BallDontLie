@@ -8,20 +8,12 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.text.Editable
 import android.text.TextWatcher
-import android.transition.TransitionManager
-import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.cardview.widget.CardView
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.getSystemService
-import androidx.core.view.get
 import androidx.fragment.app.Fragment
-import androidx.transition.Transition
 import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceInterface
 import com.example.balldontlie.controller.ServiceVolley
@@ -43,8 +35,8 @@ class CompareFragment : Fragment() {
     private lateinit var ctx: Context
     private lateinit var controller: APIController
     private lateinit var searchAdapter: ArrayAdapter<Player>
-    private var displayedPlayers: MutableList<Player> = ArrayList<Player>()
-    private var selectedPlayers: MutableList<Player> = ArrayList<Player>()
+    private var displayedPlayers: MutableList<Player> = ArrayList()
+    private var selectedPlayers: MutableList<Player> = ArrayList()
 
     private lateinit var myInflater: LayoutInflater
     private lateinit var searchDialog: AlertDialog
@@ -73,8 +65,11 @@ class CompareFragment : Fragment() {
         val searchPopup: View = myInflater.inflate(R.layout.search_popup, null)
         val searchResultList = searchPopup.findViewById<ListView>(R.id.searchListView)
         val searchText = searchPopup.findViewById<EditText>(R.id.searchEditText)
-        val player1Card: CardView = searchPopup.findViewById<CardView>(R.id.player1Card)
-        val player2Card: CardView = searchPopup.findViewById<CardView>(R.id.player2Card)
+        val player1Card: CardView = searchPopup.findViewById(R.id.player1Card)
+        val player2Card: CardView = searchPopup.findViewById(R.id.player2Card)
+        val player1Text: TextView = searchPopup.findViewById(R.id.player1Text)
+        val player2Text: TextView = searchPopup.findViewById(R.id.player2Text)
+        val clearButton: Button = searchPopup.findViewById(R.id.clearButton)
 
         // Event handling for widgets
         searchAdapter = ArrayAdapter(
@@ -92,10 +87,30 @@ class CompareFragment : Fragment() {
 
         searchResultList.setOnItemClickListener { parent, view, position, id ->
             val vibrateLength: Long = 500
-            vibrator.vibrate(VibrationEffect.createOneShot(
-                vibrateLength, VibrationEffect.DEFAULT_AMPLITUDE))
+            vibrator.vibrate(
+                VibrationEffect.createOneShot(
+                    vibrateLength, VibrationEffect.DEFAULT_AMPLITUDE
+                )
+            )
             val selectedPlayer: Player = displayedPlayers[position]
+
+            if (selectedPlayers.size < 2) {
+                selectedPlayers.add(selectedPlayer)
+            } else if (selectedPlayer == selectedPlayers[0]) {
+                Toast.makeText(ctx, "Players must be different", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(ctx, "Clear your selections!", Toast.LENGTH_LONG).show()
+            }
+
+            // TODO - change the text setting to bind to an object which has state maintained in this class
+            player1Text.text = selectedPlayers[0].last_name
+            player2Text.text = selectedPlayers[1].last_name
         }
+
+        clearButton.setOnClickListener() {
+            selectedPlayers.clear()
+        }
+
 
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(ctx)
         dialogBuilder.setOnDismissListener {
