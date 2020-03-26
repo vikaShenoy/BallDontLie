@@ -1,8 +1,10 @@
 package com.example.balldontlie
 
 import android.app.AlertDialog
+import android.app.SearchManager
 import android.content.Context
 import android.content.Context.VIBRATOR_SERVICE
+import android.content.Intent
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -18,6 +20,7 @@ import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceInterface
 import com.example.balldontlie.controller.ServiceVolley
 import com.example.balldontlie.model.Player
+import com.example.balldontlie.model.SelectedPlayers
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_compare.*
 import kotlinx.android.synthetic.main.search_popup.*
@@ -36,7 +39,9 @@ class CompareFragment : Fragment() {
     private lateinit var controller: APIController
     private lateinit var searchAdapter: ArrayAdapter<Player>
     private var displayedPlayers: MutableList<Player> = ArrayList()
-    private var selectedPlayers: MutableList<Player> = ArrayList()
+
+    // Allow the user to select two players to compare for stats.
+    private var selectedPlayers: SelectedPlayers = SelectedPlayers()
 
     private lateinit var myInflater: LayoutInflater
     private lateinit var searchDialog: AlertDialog
@@ -51,8 +56,7 @@ class CompareFragment : Fragment() {
         myInflater = inflater
         ctx = container!!.context
         vibrator = ctx.getSystemService(VIBRATOR_SERVICE) as Vibrator
-        val service: ServiceInterface = ServiceVolley()
-        controller = APIController(service)
+        controller = APIController(ServiceVolley())
         return inflater.inflate(R.layout.fragment_compare, container, false)
     }
 
@@ -70,6 +74,9 @@ class CompareFragment : Fragment() {
         val player1Text: TextView = searchPopup.findViewById(R.id.player1Text)
         val player2Text: TextView = searchPopup.findViewById(R.id.player2Text)
         val clearButton: Button = searchPopup.findViewById(R.id.clearButton)
+
+        player1Text.text = ""
+        player2Text.text = ""
 
         // Event handling for widgets
         searchAdapter = ArrayAdapter(
@@ -93,28 +100,50 @@ class CompareFragment : Fragment() {
                 )
             )
             val selectedPlayer: Player = displayedPlayers[position]
-
-            if (selectedPlayers.size < 2) {
-                selectedPlayers.add(selectedPlayer)
-            } else if (selectedPlayer == selectedPlayers[0]) {
-                Toast.makeText(ctx, "Players must be different", Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(ctx, "Clear your selections!", Toast.LENGTH_LONG).show()
+            val added: Boolean = selectedPlayers.addPlayer(selectedPlayer)
+            if (!added) {
+                Toast.makeText(
+                    ctx,
+                    "Clear players before adding more",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-
-            // TODO - change the text setting to bind to an object which has state maintained in this class
-            player1Text.text = selectedPlayers[0].last_name
-            player2Text.text = selectedPlayers[1].last_name
+            val names: List<String> = selectedPlayers.getPlayerNames()
+            player1Text.text = names[0]
+            player2Text.text = names[1]
         }
 
         clearButton.setOnClickListener() {
-            selectedPlayers.clear()
+            selectedPlayers.clearPlayers()
+            player1Text.text = ""
+            player2Text.text = ""
         }
 
+        player1Card.setOnClickListener {
+            if (selectedPlayers.player1 != null) {
+                val intent: Intent = Intent(Intent.ACTION_WEB_SEARCH)
+                intent.putExtra(
+                    SearchManager.QUERY,
+                    "${selectedPlayers.player1!!.first_name} ${selectedPlayers.player1!!.last_name}"
+                )
+                startActivity(intent)
+            }
+        }
+
+        player2Card.setOnClickListener {
+            if (selectedPlayers.player2 != null) {
+                val intent: Intent = Intent(Intent.ACTION_WEB_SEARCH)
+                intent.putExtra(
+                    SearchManager.QUERY,
+                    "${selectedPlayers.player2!!.first_name} ${selectedPlayers.player2!!.last_name}"
+                )
+                startActivity(intent)
+            }
+        }
 
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(ctx)
         dialogBuilder.setOnDismissListener {
-            Toast.makeText(ctx, "Dismissed", Toast.LENGTH_SHORT).show()
+            // TODO - add the player stats to the table here
         }
 
         dialogBuilder.setView(searchPopup)
