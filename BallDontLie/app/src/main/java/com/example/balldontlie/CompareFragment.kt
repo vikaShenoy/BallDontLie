@@ -21,6 +21,7 @@ import android.view.animation.AnimationSet
 import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceInterface
@@ -69,6 +70,18 @@ class CompareFragment : Fragment() {
         searchButton.setOnClickListener { showSearchDialog() }
     }
 
+    /**
+     * Get layout params for a list view.
+     * Used to set the search list view height to not be too big.
+     */
+    private fun getNewHeightParam(numItems: Int, listView: ListView): ViewGroup.LayoutParams {
+        val item: View = searchAdapter.getView(0, null, listView)
+        item.measure(0, 0)
+        val newParams: ViewGroup.LayoutParams = listView.layoutParams
+        newParams.height = item.measuredHeight * numItems
+        return newParams
+    }
+
     private fun showSearchDialog() {
         val searchPopup: View = myInflater.inflate(R.layout.search_popup, null)
 
@@ -90,10 +103,13 @@ class CompareFragment : Fragment() {
             displayedPlayers
         ).also { adapter -> searchResultList.adapter = adapter }
 
+
         val searchDelay: Long = 500
         searchText.afterTextChangedDebounce(searchDelay) { searchTerm ->
             controller.get("players?search=$searchTerm", JSONObject()) { response ->
                 populateSearch(response)
+                searchResultList.layoutParams =
+                    getNewHeightParam(numItems = 3, listView = searchResultList)
             }
         }
 
@@ -119,14 +135,11 @@ class CompareFragment : Fragment() {
         }
 
         clearButton.setOnClickListener() {
-            // Animation
-            val animationSet: AnimatorSet = AnimatorInflater.loadAnimator(ctx, R.animator.shake) as AnimatorSet
+            // Animate the button to shake
+            val animationSet: AnimatorSet =
+                AnimatorInflater.loadAnimator(ctx, R.animator.shake) as AnimatorSet
             animationSet.setTarget(it)
             animationSet.start()
-//            val buttonAnimator: ObjectAnimator = AnimatorInflater.loadAnimator(ctx, R.animator.shake) as ObjectAnimator
-//            buttonAnimator.target = it
-//            buttonAnimator.start()
-//            it.rotation = 0f
             selectedPlayers.clearPlayers()
             player1Text.text = ""
             player2Text.text = ""
