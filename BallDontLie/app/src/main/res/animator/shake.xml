@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:ordering="sequentially">
+  <objectAnimator
+      android:duration="50"
+      android:propertyName="rotation"
+      android:repeatCount="10"
+      android:valueFrom="-5"
+      android:valueTo="5"/>
+  <objectAnimator
+      android:duration="1"
+      android:propertyName="rotation"
+      android:valueFrom="5"
+      android:valueTo="0"/>
+</set>

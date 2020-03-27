@@ -1,5 +1,8 @@
 package com.example.balldontlie
 
+import android.animation.AnimatorInflater
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.app.AlertDialog
 import android.app.SearchManager
 import android.content.Context
@@ -13,6 +16,9 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationSet
+import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
@@ -45,9 +51,7 @@ class CompareFragment : Fragment() {
 
     private lateinit var myInflater: LayoutInflater
     private lateinit var searchDialog: AlertDialog
-
     private lateinit var vibrator: Vibrator
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -67,6 +71,7 @@ class CompareFragment : Fragment() {
 
     private fun showSearchDialog() {
         val searchPopup: View = myInflater.inflate(R.layout.search_popup, null)
+
         val searchResultList = searchPopup.findViewById<ListView>(R.id.searchListView)
         val searchText = searchPopup.findViewById<EditText>(R.id.searchEditText)
         val player1Card: CardView = searchPopup.findViewById(R.id.player1Card)
@@ -114,6 +119,14 @@ class CompareFragment : Fragment() {
         }
 
         clearButton.setOnClickListener() {
+            // Animation
+            val animationSet: AnimatorSet = AnimatorInflater.loadAnimator(ctx, R.animator.shake) as AnimatorSet
+            animationSet.setTarget(it)
+            animationSet.start()
+//            val buttonAnimator: ObjectAnimator = AnimatorInflater.loadAnimator(ctx, R.animator.shake) as ObjectAnimator
+//            buttonAnimator.target = it
+//            buttonAnimator.start()
+//            it.rotation = 0f
             selectedPlayers.clearPlayers()
             player1Text.text = ""
             player2Text.text = ""
@@ -145,10 +158,8 @@ class CompareFragment : Fragment() {
         dialogBuilder.setOnDismissListener {
             // TODO - add the player stats to the table here
         }
-
         dialogBuilder.setView(searchPopup)
         searchDialog = dialogBuilder.create()
-        //alertDialog.window!!.getAttributes().windowAnimations = R.style.PauseDialogAnimation
         searchDialog.show()
     }
 
