@@ -19,6 +19,7 @@ import com.example.balldontlie.model.Schedule
 import com.example.balldontlie.model.Team
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_schedule.*
+import org.honorato.multistatetogglebutton.MultiStateToggleButton
 import org.json.JSONObject
 import java.text.FieldPosition
 
@@ -66,11 +67,6 @@ class ScheduleFragment : Fragment() {
         val service: ServiceInterface = ServiceVolley()
         controller = APIController(service)
 
-        // Call API to fill a map of {"HOU"->11...}
-        controller.get("teams", JSONObject()) { response ->
-            fillTeamMap(response)
-        }
-
         refreshSchedule()
         return rootView
     }
@@ -78,33 +74,29 @@ class ScheduleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initSeasonSpinner()
+        // Call API to fill a map of {"HOU"->11...}
+        controller.get("teams", JSONObject()) { response ->
+            fillTeamMap(response)
+            initSeasonToggle()
+        }
     }
 
-    private fun initSeasonSpinner() {
-        ArrayAdapter.createFromResource(
-            ctx,
-            R.array.season_array,
-            android.R.layout.simple_spinner_item
-        ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            seasonSpinner.adapter = adapter
+    private fun initSeasonToggle() {
+        val toggle: MultiStateToggleButton? = activity?.findViewById(R.id.season_toggle)
+        toggle?.setOnValueChangedListener { position ->
+            val selectedSeason = resources.getStringArray(R.array.season_array)[position]
+            setSeason(selectedSeason)
+            refreshSchedule()
         }
+    }
 
-        seasonSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                idp3: Long
-            ) {
-                val selectedSeason = parent?.getItemAtPosition(position) as String
-                setSeason(selectedSeason)
-                refreshSchedule()
-            }
-
-            override fun onNothingSelected(p0: AdapterView<*>?) {}
+    private fun fillTeamMap(response: JSONObject?) {
+        val data = JSONObject(response.toString()).getJSONArray("data")
+        for (i in 0 until data.length()) {
+            val team: Team = Gson().fromJson(data.getString(i), Team::class.java)
+            teamMap[team.abbreviation] = team.id
         }
+        initTeamSpinner()
     }
 
     private fun initTeamSpinner() {
@@ -123,7 +115,6 @@ class ScheduleFragment : Fragment() {
                 position: Int,
                 idp3: Long
             ) {
-                // Looks like 'HOU' 'BOS' etc at the moment
                 val selectedTeam = parent?.getItemAtPosition(position) as String
                 setTeamId(selectedTeam)
                 refreshSchedule()
@@ -132,15 +123,6 @@ class ScheduleFragment : Fragment() {
             override fun onNothingSelected(p0: AdapterView<*>?) {}
         }
 
-    }
-
-    private fun fillTeamMap(response: JSONObject?) {
-        val data = JSONObject(response.toString()).getJSONArray("data")
-        for (i in 0 until data.length()) {
-            val team: Team = Gson().fromJson(data.getString(i), Team::class.java)
-            teamMap[team.abbreviation] = team.id
-        }
-        initTeamSpinner()
     }
 
     private fun setSeason(selectedSeason: String) {

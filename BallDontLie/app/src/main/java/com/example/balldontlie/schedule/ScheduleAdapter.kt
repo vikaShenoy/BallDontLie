@@ -21,7 +21,7 @@ class ScheduleAdapter(private val scheduleData: List<Schedule>) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
         // TODO - Ben said something about binding listeners here with adapterPosition
         val cardView = LayoutInflater.from(
-            parent.context).inflate(R.layout.past_schedule_card, parent, false) as CardView
+            parent.context).inflate(R.layout.schedule_card, parent, false) as CardView
         return CardViewHolder(
             cardView
         )
