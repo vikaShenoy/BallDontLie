@@ -1,0 +1,16 @@
+<resources>
+  <string name="app_name">बॉल डोंट लाइ</string>
+  <string name="menu_compare">तुलना</string>
+  <string name="menu_performance">प्रदर्शन</string>
+  <string name="menu_schedule">अनुसूची</string>
+
+  <string name="season_past">पिछला</string>
+  <string name="season_present">आज</string>
+  <string name="season_future">आगे</string>
+
+  <string name="search_hint">खोज</string>
+  <string name="confirm_button">पुष्टि करें</string>
+  <string name="clear_button">स्पष्ट</string>
+
+  <string name="stat_header">स्टेट</string>
+</resources>
