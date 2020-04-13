@@ -1,8 +1,8 @@
 package com.example.balldontlie
 
 import android.animation.AnimatorInflater
+import androidx.appcompat.app.AppCompatActivity
 import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
 import android.app.AlertDialog
 import android.app.SearchManager
 import android.content.Context
@@ -13,21 +13,19 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.AnimationSet
-import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.cardview.widget.CardView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.example.balldontlie.controller.APIController
-import com.example.balldontlie.controller.ServiceInterface
 import com.example.balldontlie.controller.ServiceVolley
 import com.example.balldontlie.model.Player
 import com.example.balldontlie.model.SelectedPlayers
+import com.example.balldontlie.model.Stats
+import com.example.balldontlie.schedule.getRegularSeason
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_compare.*
 import kotlinx.android.synthetic.main.search_popup.*
@@ -40,7 +38,7 @@ import org.json.JSONObject
  * Use the [CompareFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class CompareFragment : Fragment() {
+class CompareFragment() : Fragment() {
 
     private lateinit var ctx: Context
     private lateinit var controller: APIController
@@ -92,6 +90,7 @@ class CompareFragment : Fragment() {
         val player1Text: TextView = searchPopup.findViewById(R.id.player1Text)
         val player2Text: TextView = searchPopup.findViewById(R.id.player2Text)
         val clearButton: Button = searchPopup.findViewById(R.id.clearButton)
+        val dismissButton: Button = searchPopup.findViewById(R.id.dismissButton)
 
         player1Text.text = ""
         player2Text.text = ""
@@ -104,7 +103,7 @@ class CompareFragment : Fragment() {
         ).also { adapter -> searchResultList.adapter = adapter }
 
 
-        val searchDelay: Long = 500
+        val searchDelay: Long = 200
         searchText.afterTextChangedDebounce(searchDelay) { searchTerm ->
             controller.get("players?search=$searchTerm", JSONObject()) { response ->
                 populateSearch(response)
@@ -135,9 +134,12 @@ class CompareFragment : Fragment() {
         }
 
         clearButton.setOnClickListener() {
-            // Animate the button to shake
+            // Animate the clear button to shake
             val animationSet: AnimatorSet =
-                AnimatorInflater.loadAnimator(ctx, R.animator.shake) as AnimatorSet
+                AnimatorInflater.loadAnimator(
+                    ctx,
+                    R.animator.shake
+                ) as AnimatorSet
             animationSet.setTarget(it)
             animationSet.start()
             selectedPlayers.clearPlayers()
@@ -165,6 +167,10 @@ class CompareFragment : Fragment() {
                 )
                 startActivity(intent)
             }
+        }
+
+        dismissButton.setOnClickListener {
+            showPlayerStats()
         }
 
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(ctx)
@@ -216,6 +222,78 @@ class CompareFragment : Fragment() {
     }
 
     /**
+     * Called when the user clicks on the confirm button.
+     * Take the selected players and display their stats in the stats table.
+     */
+    private fun showPlayerStats() {
+        setPlayerStats()
+        // Close the popup view
+    }
+
+    /**
+     * Call the API for the selected player's current season stats.
+     * Set the stats for the players.
+     */
+    private fun setPlayerStats() {
+        val currentSeason = getRegularSeason()
+        if (selectedPlayers.player1 != null) {
+            controller.get(
+                path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player1!!.id}",
+                params = JSONObject()
+            ) { response ->
+                selectedPlayers.player1!!.stats = getStatsFromResponse(response)
+                if (selectedPlayers.player2 == null) {
+                    displayPlayerStats()
+                }
+            }
+        }
+
+        if (selectedPlayers.player2 != null) {
+            controller.get(
+                path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player2!!.id}",
+                params = JSONObject()
+            ) { response ->
+                selectedPlayers.player2!!.stats = getStatsFromResponse(response)
+                displayPlayerStats()
+            }
+        }
+    }
+
+    private fun displayPlayerStats() {
+        val player1Stats = selectedPlayers.player1?.stats
+        val player2Stats = selectedPlayers.player2?.stats
+        Log.i("Stats", player1Stats.toString())
+        Log.i("Stats", player2Stats.toString())
+
+        // Quick points example
+        // TODO - use reflection to loop here
+        val row = TableRow(ctx)
+        row.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+
+        val p1Pts = TextView(ctx)
+        val p2Pts = TextView(ctx)
+        val ptsLabel = TextView(ctx)
+
+        p1Pts.text = ""
+        p2Pts.text = ""
+        ptsLabel.text = "Points"
+
+        if (player1Stats != null) {
+            p1Pts.text = player1Stats.pts.toString()
+        }
+
+        if (player2Stats != null) {
+            p2Pts.text = player2Stats.pts.toString()
+        }
+
+        row.addView(p1Pts)
+        row.addView(ptsLabel)
+        row.addView(p2Pts)
+
+        statsTable.addView(row)
+    }
+
+    /**
      * Populate the search list view with these players.
      */
     private fun populateSearch(response: JSONObject?) {
@@ -226,6 +304,7 @@ class CompareFragment : Fragment() {
         }
         searchAdapter.notifyDataSetChanged()
     }
+
 
     companion object {
         /**

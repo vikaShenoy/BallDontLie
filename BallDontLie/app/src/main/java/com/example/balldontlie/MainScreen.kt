@@ -20,7 +20,8 @@ enum class MainScreen(@IdRes val menuItemId: Int,
         ScheduleFragment()
     ),
     COMPARE(R.id.bottom_navigation_compare, R.drawable.ic_compare,
-        R.string.menu_compare, CompareFragment()),
+        R.string.menu_compare, CompareFragment()
+    ),
     PERFORMANCE(R.id.bottom_navigation_performance, R.drawable.ic_performance,
         R.string.menu_performance, PerformanceFragment())
 }
