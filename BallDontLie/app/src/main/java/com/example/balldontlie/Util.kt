@@ -17,13 +17,13 @@ fun getStatsFromResponse(response: JSONObject?): Stats? {
 }
 
 val statCategories: Map<String, String> = mapOf(
-    "Points" to "pts",
-    "Rebounds" to "reb",
-    "Assists" to "ast",
-    "Blocks" to "blk",
-    "Steals" to "stl",
-    "Turnovers" to "turnover",
-    "FG%" to "fg_pct",
-    "FT%" to "ft_pct",
-    "3P%" to "fg3_pct"
+    "Points" to "Pts",
+    "Rebounds" to "Reb",
+    "Assists" to "Ast",
+    "Blocks" to "Blk",
+    "Steals" to "Stl",
+    "Turnovers" to "Turnover",
+    "FG%" to "Fg_pct",
+    "FT%" to "Ft_pct",
+    "3P%" to "Fg3_pct"
 )

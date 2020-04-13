@@ -90,12 +90,15 @@ class CompareFragment() : Fragment() {
         val player1Text: TextView = searchPopup.findViewById(R.id.player1Text)
         val player2Text: TextView = searchPopup.findViewById(R.id.player2Text)
         val clearButton: Button = searchPopup.findViewById(R.id.clearButton)
-        val dismissButton: Button = searchPopup.findViewById(R.id.dismissButton)
+        val confirmButton: Button = searchPopup.findViewById(R.id.confirmButton)
 
+        // Clear previous selections
+        statsTable.removeAllViews()
+        selectedPlayers.clearPlayers()
         player1Text.text = ""
         player2Text.text = ""
 
-        // Event handling for widgets
+        // Event handling for widgets on the popup view
         searchAdapter = ArrayAdapter(
             ctx,
             android.R.layout.simple_list_item_1,
@@ -169,16 +172,17 @@ class CompareFragment() : Fragment() {
             }
         }
 
-        dismissButton.setOnClickListener {
-            showPlayerStats()
-        }
-
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(ctx)
-        dialogBuilder.setOnDismissListener {
-            // TODO - add the player stats to the table here
-        }
+
         dialogBuilder.setView(searchPopup)
         searchDialog = dialogBuilder.create()
+        confirmButton.setOnClickListener {
+            if (selectedPlayers.player1 == null) {
+                Toast.makeText(ctx, "Select at least one player", Toast.LENGTH_SHORT).show()
+            }
+            showPlayerStats()
+            searchDialog.dismiss()
+        }
         searchDialog.show()
     }
 
@@ -222,19 +226,10 @@ class CompareFragment() : Fragment() {
     }
 
     /**
-     * Called when the user clicks on the confirm button.
-     * Take the selected players and display their stats in the stats table.
-     */
-    private fun showPlayerStats() {
-        setPlayerStats()
-        // Close the popup view
-    }
-
-    /**
      * Call the API for the selected player's current season stats.
      * Set the stats for the players.
      */
-    private fun setPlayerStats() {
+    private fun showPlayerStats() {
         val currentSeason = getRegularSeason()
         if (selectedPlayers.player1 != null) {
             controller.get(
@@ -259,38 +254,68 @@ class CompareFragment() : Fragment() {
         }
     }
 
+    /**
+     * Construct the table rows which display the selected players stats.
+     */
     private fun displayPlayerStats() {
         val player1Stats = selectedPlayers.player1?.stats
         val player2Stats = selectedPlayers.player2?.stats
-        Log.i("Stats", player1Stats.toString())
-        Log.i("Stats", player2Stats.toString())
 
-        // Quick points example
-        // TODO - use reflection to loop here
-        val row = TableRow(ctx)
-        row.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        val header = TableRow(ctx)
+        header.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
 
-        val p1Pts = TextView(ctx)
-        val p2Pts = TextView(ctx)
-        val ptsLabel = TextView(ctx)
+        val player1Name = TextView(ctx)
+        val filler = TextView(ctx)
+        val player2Name = TextView(ctx)
+        player1Name.text = ""
+        player2Name.text = ""
+        filler.text = ""
 
-        p1Pts.text = ""
-        p2Pts.text = ""
-        ptsLabel.text = "Points"
-
-        if (player1Stats != null) {
-            p1Pts.text = player1Stats.pts.toString()
+        if (selectedPlayers.player1 != null) {
+            player1Name.text = selectedPlayers.player1!!.last_name
         }
 
-        if (player2Stats != null) {
-            p2Pts.text = player2Stats.pts.toString()
+        if (selectedPlayers.player2 != null) {
+            player2Name.text = selectedPlayers.player2!!.last_name
         }
 
-        row.addView(p1Pts)
-        row.addView(ptsLabel)
-        row.addView(p2Pts)
+        header.addView(player1Name)
+        header.addView(filler)
+        header.addView(player2Name)
+        statsTable.addView(header)
 
-        statsTable.addView(row)
+        for (statCategory in statCategories) {
+            val row = TableRow(ctx)
+            row.layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+
+            val statP1 = TextView(ctx)
+            val statP2 = TextView(ctx)
+            val statLabel = TextView(ctx)
+            statP1.text = ""
+            statP2.text = ""
+            statLabel.text = statCategory.key
+
+            if (player1Stats != null) {
+                statP1.text = player1Stats.javaClass.getMethod("get${statCategory.value}")
+                    .invoke(player1Stats).toString()
+            }
+
+            if (player2Stats != null) {
+                statP2.text = player2Stats.javaClass.getMethod("get${statCategory.value}")
+                    .invoke(player2Stats).toString()
+            }
+
+            row.addView(statP1)
+            row.addView(statLabel)
+            row.addView(statP2)
+            statsTable.addView(row)
+        }
     }
 
     /**
