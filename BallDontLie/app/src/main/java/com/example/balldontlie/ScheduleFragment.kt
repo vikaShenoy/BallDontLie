@@ -16,10 +16,7 @@ import com.example.balldontlie.controller.*
 import com.example.balldontlie.model.Game
 import com.example.balldontlie.model.Schedule
 import com.example.balldontlie.model.Team
-import com.example.balldontlie.util.gamesToSchedule
-import com.example.balldontlie.util.getCurrentDate
-import com.example.balldontlie.util.getSeasonEndDate
-import com.example.balldontlie.util.getSeasonStartDate
+import com.example.balldontlie.util.*
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_schedule.*
 import org.honorato.multistatetogglebutton.MultiStateToggleButton
@@ -156,20 +153,11 @@ class ScheduleFragment : Fragment() {
         val path = "games?start_date=${startDate}&end_date=${
         endDate}&team_ids[]=${teamId}"
         controller.get(path = path, params = JSONObject()) { response ->
-            setScheduleData(response)
+            val scheduleData = getScheduleData(response, teamId)
+            updateView(scheduleData)
         }
     }
 
-    private fun setScheduleData(response: JSONObject?) {
-        val gameData: ArrayList<Game> = ArrayList()
-        val data = JSONObject(response.toString()).getJSONArray("data")
-        for (i in 0 until data.length()) {
-            gameData.add(Gson().fromJson(data.getString(i), Game::class.java))
-        }
-        val scheduleList =
-            gamesToSchedule(gameData, teamId)
-        updateView(scheduleList)
-    }
 
     private fun updateView(data: List<Schedule>) {
         scheduleData.clear()

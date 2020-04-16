@@ -1,40 +1,7 @@
 package com.example.balldontlie.util
 
-import com.example.balldontlie.controller.APIController
-import com.example.balldontlie.model.Game
-import com.example.balldontlie.model.Schedule
-import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
-
-/**
- * Loop through a list of games and convert them to the format needed to be displayed
- * in schedule cards on the recycler view on the schedule fragment.
- */
-fun gamesToSchedule(gameList: MutableList<Game>, teamId: Int): MutableList<Schedule> {
-    val scheduleList: MutableList<Schedule> = ArrayList<Schedule>()
-    for (game in gameList) {
-        if (game.home_team?.id == teamId) {
-            val score: String = "${game.home_team_score} - ${game.visitor_team_score}"
-            val schedule = Schedule(
-                score = score,
-                team = game.visitor_team!!.full_name,
-                stadium = game.home_team.city
-            )
-            scheduleList.add(schedule)
-        } else {
-            val score: String = "${game.visitor_team_score} - ${game.home_team_score}"
-            val schedule = Schedule(
-                score = score,
-                team = game.home_team!!.full_name,
-                stadium = game.home_team.city
-            )
-            scheduleList.add(schedule)
-        }
-    }
-    return scheduleList
-}
 
 /**
  * Return the current date.
@@ -100,4 +67,18 @@ fun getRegularSeason(): String {
     }
     return currentYear.toString()
 
+}
+
+/**
+ * Subtract a number of days from the current date and return.
+ * @param daysAgo: number of days to subtract.
+ */
+fun getPreviousDate(daysAgo: Int) : String {
+    val apiDatePattern = "yyyy-MM-dd"
+    val formatter = SimpleDateFormat(apiDatePattern)
+
+    val date = Calendar.getInstance()
+    date.add(Calendar.DAY_OF_YEAR, -1 * daysAgo)
+    val previousDate = date.time
+    return formatter.format(previousDate)
 }

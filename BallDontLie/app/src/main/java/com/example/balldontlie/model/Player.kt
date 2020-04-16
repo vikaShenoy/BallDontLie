@@ -9,7 +9,9 @@ data class Player(
     val height_inches: Int = 0,
     val weight_pounds: Int = 0,
     val team: Team? = null,
-    var stats: Stats? = null
+    var seasonStats: Stats? = null,
+    var gameStats: Map<String, Stats>? = null
+
 ) {
 
     override fun toString(): String {

@@ -12,7 +12,7 @@ import com.example.balldontlie.controller.ServiceVolley
 import com.example.balldontlie.model.SelectedPlayers
 import com.example.balldontlie.util.PlayerSelect
 import com.example.balldontlie.util.getRegularSeason
-import com.example.balldontlie.util.getStatsFromResponse
+import com.example.balldontlie.util.getSeasonStatsFromResponse
 import com.example.balldontlie.util.statCategories
 import kotlinx.android.synthetic.main.fragment_compare.*
 import org.json.JSONObject
@@ -27,19 +27,18 @@ class CompareFragment() : Fragment() {
 
     private lateinit var ctx: Context
     private lateinit var controller: APIController
-    private lateinit var myInflater: LayoutInflater
-
-    private var playerSelect: PlayerSelect =
-        PlayerSelect()
+    private lateinit var viewInflater: LayoutInflater
+    private lateinit var playerSelect: PlayerSelect
 
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        myInflater = inflater
+        viewInflater = inflater
         ctx = container!!.context
         controller = APIController(ServiceVolley())
+        playerSelect = PlayerSelect()
         return inflater.inflate(R.layout.fragment_compare, container, false)
     }
 
@@ -56,7 +55,7 @@ class CompareFragment() : Fragment() {
         statsTable.removeAllViews()
         playerSelect.selectedPlayers.clearPlayers()
         val searchDialog = playerSelect.createSearchDialog(
-            ctx, myInflater, controller
+            ctx, viewInflater, controller
         ) { showPlayerStats() }
         searchDialog.show()
     }
@@ -74,8 +73,8 @@ class CompareFragment() : Fragment() {
                 path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player1!!.id}",
                 params = JSONObject()
             ) { response ->
-                selectedPlayers.player1!!.stats =
-                    getStatsFromResponse(response)
+                selectedPlayers.player1!!.seasonStats =
+                    getSeasonStatsFromResponse(response)
                 if (selectedPlayers.player2 == null) {
                     displayPlayerStats(selectedPlayers)
                 }
@@ -87,8 +86,8 @@ class CompareFragment() : Fragment() {
                 path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player2!!.id}",
                 params = JSONObject()
             ) { response ->
-                selectedPlayers.player2!!.stats =
-                    getStatsFromResponse(response)
+                selectedPlayers.player2!!.seasonStats =
+                    getSeasonStatsFromResponse(response)
                 displayPlayerStats(selectedPlayers)
             }
         }
@@ -98,8 +97,8 @@ class CompareFragment() : Fragment() {
      * Construct the table rows which display the selected players stats.
      */
     private fun displayPlayerStats(selectedPlayers : SelectedPlayers) {
-        val player1Stats = selectedPlayers.player1?.stats
-        val player2Stats = selectedPlayers.player2?.stats
+        val player1Stats = selectedPlayers.player1?.seasonStats
+        val player2Stats = selectedPlayers.player2?.seasonStats
 
         val header = TableRow(ctx)
         header.layoutParams = ViewGroup.LayoutParams(
