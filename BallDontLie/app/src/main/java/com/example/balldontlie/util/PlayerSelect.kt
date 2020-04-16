@@ -1,4 +1,4 @@
-package com.example.balldontlie
+package com.example.balldontlie.util
 
 import android.animation.AnimatorInflater
 import android.animation.AnimatorSet
@@ -16,11 +16,11 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import com.example.balldontlie.R
 import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.model.Player
 import com.example.balldontlie.model.SelectedPlayers
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.fragment_compare.*
 import kotlinx.coroutines.*
 import org.json.JSONObject
 

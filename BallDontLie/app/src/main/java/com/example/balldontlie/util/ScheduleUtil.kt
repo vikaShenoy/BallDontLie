@@ -1,4 +1,4 @@
-package com.example.balldontlie.schedule
+package com.example.balldontlie.util
 
 import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.model.Game

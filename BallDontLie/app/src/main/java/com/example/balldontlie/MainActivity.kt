@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.viewpager.widget.ViewPager
-import com.google.android.material.bottomnavigation.BottomNavigationItemView
+import com.example.balldontlie.adapter.MainPagerAdapter
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /**
@@ -23,7 +23,9 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         // Initialise components
         viewPager = findViewById(R.id.view_pager)
         bottomNavigationView = findViewById(R.id.bottom_navigation_view)
-        mainPagerAdapter = MainPagerAdapter(supportFragmentManager)
+        mainPagerAdapter = MainPagerAdapter(
+            supportFragmentManager
+        )
 
         // Items to be displayed
         mainPagerAdapter.setItems(arrayListOf(MainScreen.SCHEDULE,

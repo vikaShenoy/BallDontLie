@@ -1,36 +1,20 @@
 package com.example.balldontlie
 
-import android.animation.AnimatorInflater
-import androidx.appcompat.app.AppCompatActivity
-import android.animation.AnimatorSet
-import android.app.AlertDialog
-import android.app.SearchManager
 import android.content.Context
-import android.content.Context.VIBRATOR_SERVICE
-import android.content.Intent
 import android.os.Bundle
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.text.Editable
-import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceVolley
-import com.example.balldontlie.model.Player
 import com.example.balldontlie.model.SelectedPlayers
-import com.example.balldontlie.model.Stats
-import com.example.balldontlie.schedule.getRegularSeason
-import com.google.gson.Gson
+import com.example.balldontlie.util.PlayerSelect
+import com.example.balldontlie.util.getRegularSeason
+import com.example.balldontlie.util.getStatsFromResponse
+import com.example.balldontlie.util.statCategories
 import kotlinx.android.synthetic.main.fragment_compare.*
-import kotlinx.android.synthetic.main.search_popup.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.selects.select
 import org.json.JSONObject
 
 
@@ -45,7 +29,8 @@ class CompareFragment() : Fragment() {
     private lateinit var controller: APIController
     private lateinit var myInflater: LayoutInflater
 
-    private var playerSelect: PlayerSelect = PlayerSelect()
+    private var playerSelect: PlayerSelect =
+        PlayerSelect()
 
 
     override fun onCreateView(
@@ -89,7 +74,8 @@ class CompareFragment() : Fragment() {
                 path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player1!!.id}",
                 params = JSONObject()
             ) { response ->
-                selectedPlayers.player1!!.stats = getStatsFromResponse(response)
+                selectedPlayers.player1!!.stats =
+                    getStatsFromResponse(response)
                 if (selectedPlayers.player2 == null) {
                     displayPlayerStats(selectedPlayers)
                 }
@@ -101,7 +87,8 @@ class CompareFragment() : Fragment() {
                 path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player2!!.id}",
                 params = JSONObject()
             ) { response ->
-                selectedPlayers.player2!!.stats = getStatsFromResponse(response)
+                selectedPlayers.player2!!.stats =
+                    getStatsFromResponse(response)
                 displayPlayerStats(selectedPlayers)
             }
         }

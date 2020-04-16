@@ -1,4 +1,4 @@
-package com.example.balldontlie.schedule
+package com.example.balldontlie.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

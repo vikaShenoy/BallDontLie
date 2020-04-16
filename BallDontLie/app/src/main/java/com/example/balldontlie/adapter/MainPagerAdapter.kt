@@ -1,8 +1,9 @@
-package com.example.balldontlie
+package com.example.balldontlie.adapter
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
+import com.example.balldontlie.MainScreen
 
 /**
  * Manage the main activity's fragments.

@@ -1,4 +1,4 @@
-package com.example.balldontlie
+package com.example.balldontlie.util
 
 import com.example.balldontlie.model.Stats
 import com.google.gson.Gson

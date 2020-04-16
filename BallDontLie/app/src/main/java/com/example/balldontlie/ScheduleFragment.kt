@@ -1,8 +1,7 @@
-package com.example.balldontlie.schedule
+package com.example.balldontlie
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,16 +11,19 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.balldontlie.R
+import com.example.balldontlie.adapter.ScheduleAdapter
 import com.example.balldontlie.controller.*
 import com.example.balldontlie.model.Game
 import com.example.balldontlie.model.Schedule
 import com.example.balldontlie.model.Team
+import com.example.balldontlie.util.gamesToSchedule
+import com.example.balldontlie.util.getCurrentDate
+import com.example.balldontlie.util.getSeasonEndDate
+import com.example.balldontlie.util.getSeasonStartDate
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_schedule.*
 import org.honorato.multistatetogglebutton.MultiStateToggleButton
 import org.json.JSONObject
-import java.text.FieldPosition
 
 /**
  * A simple [Fragment] subclass.
@@ -56,7 +58,8 @@ class ScheduleFragment : Fragment() {
             container,
             false
         )
-        viewAdapter = ScheduleAdapter(scheduleData)
+        viewAdapter =
+            ScheduleAdapter(scheduleData)
         viewManager = LinearLayoutManager(activity)
         recyclerView = rootView.findViewById(R.id.recyclerView)
         recyclerView.apply {
@@ -163,7 +166,8 @@ class ScheduleFragment : Fragment() {
         for (i in 0 until data.length()) {
             gameData.add(Gson().fromJson(data.getString(i), Game::class.java))
         }
-        val scheduleList = gamesToSchedule(gameData, teamId)
+        val scheduleList =
+            gamesToSchedule(gameData, teamId)
         updateView(scheduleList)
     }
 

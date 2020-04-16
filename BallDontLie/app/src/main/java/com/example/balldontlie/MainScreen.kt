@@ -4,7 +4,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
-import com.example.balldontlie.schedule.ScheduleFragment
 
 /**
  * Screens available for display in the main screen, with their respective titles,
