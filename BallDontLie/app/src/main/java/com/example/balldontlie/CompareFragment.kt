@@ -30,6 +30,7 @@ import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_compare.*
 import kotlinx.android.synthetic.main.search_popup.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.selects.select
 import org.json.JSONObject
 
 
@@ -42,15 +43,10 @@ class CompareFragment() : Fragment() {
 
     private lateinit var ctx: Context
     private lateinit var controller: APIController
-    private lateinit var searchAdapter: ArrayAdapter<Player>
-    private var displayedPlayers: MutableList<Player> = ArrayList()
-
-    // Allow the user to select two players to compare for stats.
-    private var selectedPlayers: SelectedPlayers = SelectedPlayers()
-
     private lateinit var myInflater: LayoutInflater
-    private lateinit var searchDialog: AlertDialog
-    private lateinit var vibrator: Vibrator
+
+    private var playerSelect: PlayerSelect = PlayerSelect()
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,7 +54,6 @@ class CompareFragment() : Fragment() {
     ): View? {
         myInflater = inflater
         ctx = container!!.context
-        vibrator = ctx.getSystemService(VIBRATOR_SERVICE) as Vibrator
         controller = APIController(ServiceVolley())
         return inflater.inflate(R.layout.fragment_compare, container, false)
     }
@@ -69,167 +64,25 @@ class CompareFragment() : Fragment() {
     }
 
     /**
-     * Get layout params for a list view.
-     * Used to set the search list view height to not be too big.
+     * Create and display a popup dialog used for selecting players.
+     * Clear stats table.
      */
-    private fun getNewHeightParam(numItems: Int, listView: ListView): ViewGroup.LayoutParams {
-        val item: View = searchAdapter.getView(0, null, listView)
-        item.measure(0, 0)
-        val newParams: ViewGroup.LayoutParams = listView.layoutParams
-        newParams.height = item.measuredHeight * numItems
-        return newParams
-    }
-
     private fun showSearchDialog() {
-        val searchPopup: View = myInflater.inflate(R.layout.search_popup, null)
-
-        val searchResultList = searchPopup.findViewById<ListView>(R.id.searchListView)
-        val searchText = searchPopup.findViewById<EditText>(R.id.searchEditText)
-        val player1Card: CardView = searchPopup.findViewById(R.id.player1Card)
-        val player2Card: CardView = searchPopup.findViewById(R.id.player2Card)
-        val player1Text: TextView = searchPopup.findViewById(R.id.player1Text)
-        val player2Text: TextView = searchPopup.findViewById(R.id.player2Text)
-        val clearButton: Button = searchPopup.findViewById(R.id.clearButton)
-        val confirmButton: Button = searchPopup.findViewById(R.id.confirmButton)
-
-        // Clear previous selections
         statsTable.removeAllViews()
-        selectedPlayers.clearPlayers()
-        player1Text.text = ""
-        player2Text.text = ""
-
-        // Event handling for widgets on the popup view
-        searchAdapter = ArrayAdapter(
-            ctx,
-            android.R.layout.simple_list_item_1,
-            displayedPlayers
-        ).also { adapter -> searchResultList.adapter = adapter }
-
-
-        val searchDelay: Long = 200
-        searchText.afterTextChangedDebounce(searchDelay) { searchTerm ->
-            controller.get("players?search=$searchTerm", JSONObject()) { response ->
-                populateSearch(response)
-                searchResultList.layoutParams =
-                    getNewHeightParam(numItems = 3, listView = searchResultList)
-            }
-        }
-
-        searchResultList.setOnItemClickListener { parent, view, position, id ->
-            val vibrateLength: Long = 500
-            vibrator.vibrate(
-                VibrationEffect.createOneShot(
-                    vibrateLength, VibrationEffect.DEFAULT_AMPLITUDE
-                )
-            )
-            val selectedPlayer: Player = displayedPlayers[position]
-            val added: Boolean = selectedPlayers.addPlayer(selectedPlayer)
-            if (!added) {
-                Toast.makeText(
-                    ctx,
-                    "Clear players before adding more",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-            val names: List<String> = selectedPlayers.getPlayerNames()
-            player1Text.text = names[0]
-            player2Text.text = names[1]
-        }
-
-        clearButton.setOnClickListener() {
-            // Animate the clear button to shake
-            val animationSet: AnimatorSet =
-                AnimatorInflater.loadAnimator(
-                    ctx,
-                    R.animator.shake
-                ) as AnimatorSet
-            animationSet.setTarget(it)
-            animationSet.start()
-            selectedPlayers.clearPlayers()
-            player1Text.text = ""
-            player2Text.text = ""
-        }
-
-        player1Card.setOnClickListener {
-            if (selectedPlayers.player1 != null) {
-                val intent: Intent = Intent(Intent.ACTION_WEB_SEARCH)
-                intent.putExtra(
-                    SearchManager.QUERY,
-                    "${selectedPlayers.player1!!.first_name} ${selectedPlayers.player1!!.last_name}"
-                )
-                startActivity(intent)
-            }
-        }
-
-        player2Card.setOnClickListener {
-            if (selectedPlayers.player2 != null) {
-                val intent: Intent = Intent(Intent.ACTION_WEB_SEARCH)
-                intent.putExtra(
-                    SearchManager.QUERY,
-                    "${selectedPlayers.player2!!.first_name} ${selectedPlayers.player2!!.last_name}"
-                )
-                startActivity(intent)
-            }
-        }
-
-        val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(ctx)
-
-        dialogBuilder.setView(searchPopup)
-        searchDialog = dialogBuilder.create()
-        confirmButton.setOnClickListener {
-            if (selectedPlayers.player1 == null) {
-                Toast.makeText(ctx, "Select at least one player", Toast.LENGTH_SHORT).show()
-            }
-            showPlayerStats()
-            searchDialog.dismiss()
-        }
+        playerSelect.selectedPlayers.clearPlayers()
+        val searchDialog = playerSelect.createSearchDialog(
+            ctx, myInflater, controller
+        ) { showPlayerStats() }
         searchDialog.show()
     }
 
-    private fun EditText.afterTextChangedDebounce(delayMillis: Long, handler: (String) -> Unit) {
-        var oldSearch = ""
-        var debounceJob: Job? = null
-        val uiScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-        this.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                if (s != null) {
-                    val newSearch = s.toString()
-                    debounceJob?.cancel()
-                    if (newSearch != oldSearch) {
-                        oldSearch = newSearch
-                        debounceJob = uiScope.launch {
-                            delay(delayMillis)
-                            if (oldSearch == newSearch) {
-                                handler(newSearch)
-                            }
-                        }
-                    }
-                }
-            }
-
-            override fun beforeTextChanged(
-                cs: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int
-            ) {
-            }
-
-            override fun onTextChanged(
-                cs: CharSequence?,
-                start: Int,
-                before: Int,
-                count: Int
-            ) {
-            }
-        })
-    }
 
     /**
      * Call the API for the selected player's current season stats.
      * Set the stats for the players.
      */
     private fun showPlayerStats() {
+        val selectedPlayers = playerSelect.selectedPlayers
         val currentSeason = getRegularSeason()
         if (selectedPlayers.player1 != null) {
             controller.get(
@@ -238,7 +91,7 @@ class CompareFragment() : Fragment() {
             ) { response ->
                 selectedPlayers.player1!!.stats = getStatsFromResponse(response)
                 if (selectedPlayers.player2 == null) {
-                    displayPlayerStats()
+                    displayPlayerStats(selectedPlayers)
                 }
             }
         }
@@ -249,7 +102,7 @@ class CompareFragment() : Fragment() {
                 params = JSONObject()
             ) { response ->
                 selectedPlayers.player2!!.stats = getStatsFromResponse(response)
-                displayPlayerStats()
+                displayPlayerStats(selectedPlayers)
             }
         }
     }
@@ -257,7 +110,7 @@ class CompareFragment() : Fragment() {
     /**
      * Construct the table rows which display the selected players stats.
      */
-    private fun displayPlayerStats() {
+    private fun displayPlayerStats(selectedPlayers : SelectedPlayers) {
         val player1Stats = selectedPlayers.player1?.stats
         val player2Stats = selectedPlayers.player2?.stats
 
@@ -317,19 +170,6 @@ class CompareFragment() : Fragment() {
             statsTable.addView(row)
         }
     }
-
-    /**
-     * Populate the search list view with these players.
-     */
-    private fun populateSearch(response: JSONObject?) {
-        displayedPlayers.clear()
-        val data = JSONObject(response.toString()).getJSONArray("data")
-        for (i in 0 until data.length()) {
-            displayedPlayers.add(Gson().fromJson(data.getString(i), Player::class.java))
-        }
-        searchAdapter.notifyDataSetChanged()
-    }
-
 
     companion object {
         /**
