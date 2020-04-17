@@ -9,8 +9,10 @@ data class Player(
     val height_inches: Int = 0,
     val weight_pounds: Int = 0,
     val team: Team? = null,
+    // Statistic averages over a season
     var seasonStats: Stats? = null,
-    var gameStats: Map<String, Stats>? = null
+    // List of statistics representing stats in games
+    var gameStats: MutableList<Stats> = ArrayList<Stats>()
 
 ) {
 

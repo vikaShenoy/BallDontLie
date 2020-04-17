@@ -2,20 +2,17 @@ package com.example.balldontlie
 
 import android.content.Context
 import android.os.Bundle
-import android.provider.ContactsContract
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.anychart.AnyChart
-import com.anychart.chart.common.dataentry.DataEntry
-import com.anychart.chart.common.dataentry.ValueDataEntry
+import androidx.fragment.app.Fragment
 import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceVolley
-import com.example.balldontlie.model.Player
 import com.example.balldontlie.model.SelectedPlayers
 import com.example.balldontlie.util.*
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 import kotlinx.android.synthetic.main.fragment_performance.*
 import org.json.JSONObject
 
@@ -77,26 +74,48 @@ class PerformanceFragment : Fragment() {
                 path = "stats?season=${season}&player_ids[]=${selectedPlayers.player1!!.id}&start_date=${startDate}&end_date=${endDate}",
                 params = JSONObject()
             ) { response ->
-                selectedPlayers.player1!!.seasonStats = getStatFromReponse(response)
+                selectedPlayers.player1!!.gameStats = getGameStatsFromResponse(response)
                 if (selectedPlayers.player2 == null) {
-                    displayChartStats(selectedPlayers)
+                    displayStatsInChart(selectedPlayers)
                 }
             }
         }
 
-//        if (selectedPlayers.player2 != null) {
-//            controller.get(
-//                path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player2!!.id}",
-//                params = JSONObject()
-//            ) { response ->
-//                selectedPlayers.player2!!.stats =
-//                    getStatsFromResponse(response)
-//                displayChartStats(selectedPlayers)
-//            }
-//        }
+        if (selectedPlayers.player2 != null) {
+            controller.get(
+                path = "stats?season=${season}&player_ids[]=${selectedPlayers.player2!!.id}&start_date=${startDate}&end_date=${endDate}",
+                params = JSONObject()
+            ) { response ->
+                selectedPlayers.player2!!.gameStats = getGameStatsFromResponse(response)
+                displayStatsInChart(selectedPlayers)
+            }
+        }
     }
 
-    private fun displayChartStats(selectedPlayers: SelectedPlayers) {
+
+    /**
+     * Marshall the player stats into chart data and display it.
+     * TODO - currently just a mockup. Need to implement actual player data here.
+     */
+    private fun displayStatsInChart(selectedPlayers: SelectedPlayers) {
+        val player1Stats = selectedPlayers.player1?.gameStats
+        val player2Stats = selectedPlayers.player2?.gameStats
+
+        val dataList1 = ArrayList<Entry>()
+        dataList1.add(Entry("2016".toFloat(), 500.0F))
+        dataList1.add(Entry("2017".toFloat(), 600.0F))
+
+        val dataList2 = ArrayList<Entry>()
+        dataList2.add(Entry("2016".toFloat(), 300.0F))
+        dataList2.add(Entry("2017".toFloat(), 400.0F))
+
+        val dataSet1 = LineDataSet(dataList1, "Player1Label")
+        val dataSet2 = LineDataSet(dataList2, "Player2Label")
+
+        val lineData = LineData(dataSet1, dataSet2)
+
+        statsChart.data = lineData
+        statsChart.invalidate()
 
     }
 

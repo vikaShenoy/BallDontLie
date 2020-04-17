@@ -76,7 +76,7 @@ class CompareFragment() : Fragment() {
                 selectedPlayers.player1!!.seasonStats =
                     getSeasonStatsFromResponse(response)
                 if (selectedPlayers.player2 == null) {
-                    displayPlayerStats(selectedPlayers)
+                    displayStatsInTable(selectedPlayers)
                 }
             }
         }
@@ -88,7 +88,7 @@ class CompareFragment() : Fragment() {
             ) { response ->
                 selectedPlayers.player2!!.seasonStats =
                     getSeasonStatsFromResponse(response)
-                displayPlayerStats(selectedPlayers)
+                displayStatsInTable(selectedPlayers)
             }
         }
     }
@@ -96,7 +96,7 @@ class CompareFragment() : Fragment() {
     /**
      * Construct the table rows which display the selected players stats.
      */
-    private fun displayPlayerStats(selectedPlayers : SelectedPlayers) {
+    private fun displayStatsInTable(selectedPlayers : SelectedPlayers) {
         val player1Stats = selectedPlayers.player1?.seasonStats
         val player2Stats = selectedPlayers.player2?.seasonStats
 
