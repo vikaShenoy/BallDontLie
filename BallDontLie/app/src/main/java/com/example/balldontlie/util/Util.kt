@@ -1,6 +1,6 @@
 package com.example.balldontlie.util
 
-import android.util.Log
+import android.util.Half.toFloat
 import com.example.balldontlie.model.Game
 import com.example.balldontlie.model.Schedule
 import com.example.balldontlie.model.Stats
@@ -37,20 +37,23 @@ fun getGameStatsFromResponse(response: JSONObject?): MutableList<Stats> {
  * Becomes a list of (x=Days ago, y=points) Entry objects.
  * Sort based on the x values as this is required by MPAndroidChart.
  */
-fun getChartDataFromStats(gameStats: MutableList<Stats>?, referenceDate: String): List<Entry> {
-    // Days ago - stats
+fun getChartDataFromStats(
+    gameStats: MutableList<Stats>?,
+    referenceDate: String,
+    selectedStat: String?
+): List<Entry> {
     val data = ArrayList<Entry>()
     if (gameStats != null) {
         for (stats in gameStats) {
             val date = stats.game!!.date.split("T")[0]
-            Log.i("statscheck", "ref: ${referenceDate}, date: $date")
             val daysSince = getDaysSince(referenceDate, date)
-            data.add(Entry(daysSince, stats.pts.toFloat()))
+            // TODO - investigate changing the stat model to use floats instead of doubles
+            val statValue = stats.javaClass.getMethod(
+                "get${selectedStat}").invoke(stats).toString().toFloat()
+            data.add(Entry(daysSince, statValue))
         }
     }
-    val sortedData = data.sortedWith(compareBy { it.x })
-    Log.i("stats", sortedData.toString())
-    return sortedData
+    return data.sortedWith(compareBy { it.x })
 }
 
 /**
@@ -89,15 +92,3 @@ fun getScheduleData(response: JSONObject?, teamId: Int): MutableList<Schedule> {
     }
     return gamesToSchedule(gameData, teamId)
 }
-
-val statCategories: Map<String, String> = mapOf(
-    "Points" to "Pts",
-    "Rebounds" to "Reb",
-    "Assists" to "Ast",
-    "Blocks" to "Blk",
-    "Steals" to "Stl",
-    "Turnovers" to "Turnover",
-    "FG%" to "Fg_pct",
-    "FT%" to "Ft_pct",
-    "3P%" to "Fg3_pct"
-)

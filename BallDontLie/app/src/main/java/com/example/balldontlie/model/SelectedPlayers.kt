@@ -43,4 +43,11 @@ class SelectedPlayers() {
         }
         return names
     }
+
+    fun playerPresent() : Boolean {
+        if (player1 != null || player2 != null) {
+            return true
+        }
+        return false
+    }
 }

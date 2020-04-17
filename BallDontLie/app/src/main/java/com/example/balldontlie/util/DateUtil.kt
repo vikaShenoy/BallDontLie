@@ -73,12 +73,12 @@ fun getRegularSeason(): String {
  * Subtract a number of days from the current date and return.
  * @param daysAgo: number of days to subtract.
  */
-fun getPreviousDate(daysAgo: Int) : String {
+fun getPreviousDate(daysAgo: Int?) : String {
     val pattern = "yyyy-MM-dd"
     val formatter = SimpleDateFormat(pattern)
 
     val date = Calendar.getInstance()
-    date.add(Calendar.DAY_OF_YEAR, -1 * daysAgo)
+    date.add(Calendar.DAY_OF_YEAR, -1 * daysAgo!!)
     val previousDate = date.time
     return formatter.format(previousDate)
 }

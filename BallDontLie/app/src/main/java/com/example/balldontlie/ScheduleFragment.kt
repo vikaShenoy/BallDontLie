@@ -37,7 +37,7 @@ class ScheduleFragment : Fragment() {
 
     private var teamMap = mutableMapOf<String, Int>()
 
-    private var teamId = 11
+    private var teamId: Int = TEAM_DEFAULT_ID
     private var startDate = getCurrentDate()
     private var endDate = getSeasonEndDate()
 
@@ -74,7 +74,6 @@ class ScheduleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Call API to fill a map of {"HOU"->11...}
         controller.get("teams", JSONObject()) { response ->
             fillTeamMap(response)
             initSeasonToggle()
@@ -107,13 +106,14 @@ class ScheduleFragment : Fragment() {
         ).also { adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
             teamSpinner.adapter = adapter
+            teamSpinner.setSelection(adapter.getPosition(TEAM_DEFAULT_NAME))
         }
         teamSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
                 view: View?,
                 position: Int,
-                idp3: Long
+                id: Long
             ) {
                 val selectedTeam = parent?.getItemAtPosition(position) as String
                 setTeamId(selectedTeam)

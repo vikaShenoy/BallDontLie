@@ -6,6 +6,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceVolley
@@ -31,6 +33,10 @@ class PerformanceFragment : Fragment() {
     private lateinit var playerSelect: PlayerSelect
     private lateinit var viewInflater: LayoutInflater
 
+    private var daysAgo: Int? = timeOptions[TIME_DEFAULT]
+    private var selectedStat: String? = statCategories[STATS_DEFAULT]
+
+    private var selectedPlayers: SelectedPlayers = SelectedPlayers()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +55,71 @@ class PerformanceFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initTimeSpinner()
+        initStatSpinner()
         performanceSearchButton.setOnClickListener { showSearchDialog() }
+    }
+
+    private fun initTimeSpinner() {
+        ArrayAdapter(
+            ctx,
+            android.R.layout.simple_spinner_item,
+            timeOptions.keys.toTypedArray()
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
+            timeSelection.adapter = adapter
+            timeSelection.setSelection(adapter.getPosition(TIME_DEFAULT))
+        }
+
+        timeSelection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                daysAgo = timeOptions[parent?.getItemAtPosition(position)]
+                if (playerSelect.selectedPlayers.playerPresent()) {
+                    refreshChartStats()
+                }
+            }
+        }
+    }
+
+    private fun initStatSpinner() {
+        ArrayAdapter(
+            ctx,
+            android.R.layout.simple_spinner_item,
+            statCategories.keys.toTypedArray()
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
+            statSelection.adapter = adapter
+            statSelection.setSelection(adapter.getPosition(STATS_DEFAULT))
+        }
+
+
+        statSelection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedStat = statCategories[parent?.getItemAtPosition(position)]
+                if (playerSelect.selectedPlayers.playerPresent()) {
+                    refreshChartStats()
+                }
+            }
+        }
+
     }
 
     private fun showSearchDialog() {
@@ -57,7 +127,8 @@ class PerformanceFragment : Fragment() {
         val searchDialog = playerSelect.createSearchDialog(
             ctx, viewInflater, controller
         ) {
-            fillGraphWithStats()
+            selectedPlayers = playerSelect.selectedPlayers
+            refreshChartStats()
         }
         searchDialog.show()
     }
@@ -67,31 +138,35 @@ class PerformanceFragment : Fragment() {
      * Set the stats for the players.
      * Display the player stats in a graph.
      */
-    private fun fillGraphWithStats() {
-        val selectedPlayers = playerSelect.selectedPlayers
-        // TODO - fix api calls to depend on spinners
-        val startDate = getPreviousDate(100)
+    private fun refreshChartStats() {
+        if (!selectedPlayers.playerPresent()) {
+            return
+        }
+
+        val startDate = getPreviousDate(daysAgo)
         val endDate = getCurrentDate()
         val season = getRegularSeason()
         if (selectedPlayers.player1 != null) {
             controller.get(
-                path = "stats?season=${season}&player_ids[]=${selectedPlayers.player1!!.id}&start_date=${startDate}&end_date=${endDate}",
+                path = "stats?season=${season}&player_ids[]=${selectedPlayers.player1!!.id}" +
+                        "&start_date=${startDate}&end_date=${endDate}",
                 params = JSONObject()
             ) { response ->
                 selectedPlayers.player1!!.gameStats = getGameStatsFromResponse(response)
                 if (selectedPlayers.player2 == null) {
-                    displayStatsInChart(selectedPlayers, startDate)
+                    displayStatsInChart(selectedPlayers)
                 }
             }
         }
 
         if (selectedPlayers.player2 != null) {
             controller.get(
-                path = "stats?season=${season}&player_ids[]=${selectedPlayers.player2!!.id}&start_date=${startDate}&end_date=${endDate}",
+                path = "stats?season=${season}&player_ids[]=${selectedPlayers.player2!!.id}" +
+                        "&start_date=${startDate}&end_date=${endDate}",
                 params = JSONObject()
             ) { response ->
                 selectedPlayers.player2!!.gameStats = getGameStatsFromResponse(response)
-                displayStatsInChart(selectedPlayers, startDate)
+                displayStatsInChart(selectedPlayers)
             }
         }
     }
@@ -99,21 +174,24 @@ class PerformanceFragment : Fragment() {
 
     /**
      * Marshall the player stats into chart data and display it.
-     * TODO - currently just a mockup. Need to implement actual player data here.
      */
-    private fun displayStatsInChart(selectedPlayers: SelectedPlayers, referenceDate: String) {
+    private fun displayStatsInChart(
+        selectedPlayers: SelectedPlayers
+    ) {
         val p1Stats = selectedPlayers.player1?.gameStats
         val p2Stats = selectedPlayers.player2?.gameStats
 
         val lineData = LineData()
 
-        val p1Data = getChartDataFromStats(p1Stats, referenceDate)
-        val p1DataSet = LineDataSet(p1Data, "Player 1 Name")
+        val referenceDate = getPreviousDate(daysAgo)
+
+        val p1Data = getChartDataFromStats(p1Stats, referenceDate, selectedStat)
+        val p1DataSet = LineDataSet(p1Data, selectedPlayers.player1?.last_name)
         lineData.addDataSet(p1DataSet)
 
         if (p2Stats != null) {
-            val p2Data = getChartDataFromStats(p2Stats, referenceDate)
-            val p2DataSet = LineDataSet(p2Data, "Player 2 Name")
+            val p2Data = getChartDataFromStats(p2Stats, referenceDate, selectedStat)
+            val p2DataSet = LineDataSet(p2Data, selectedPlayers.player2?.last_name)
             lineData.addDataSet(p2DataSet)
         }
 
