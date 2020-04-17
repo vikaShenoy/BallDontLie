@@ -1,5 +1,7 @@
 package com.example.balldontlie.model
 
-data class Schedule(val score: String = "", val team: String = "", val stadium: String = "") {
-
-}
+/**
+ * Represents a game between two teams. Used in the schedule fragment list.
+ * @param team: opposition team.
+ */
+data class Schedule(val score: String = "", val team: String = "", val stadium: String = "") {}

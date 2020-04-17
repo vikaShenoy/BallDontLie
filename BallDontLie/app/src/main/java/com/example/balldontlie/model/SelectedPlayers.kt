@@ -1,12 +1,16 @@
 package com.example.balldontlie.model
 
+/**
+ * Class to represent players the user has chosen in the search popup.
+ * Implementation hard codes for two players currently, this can be extended in the future.
+ */
 class SelectedPlayers() {
     var player1: Player? = null
     var player2: Player? = null
 
     /**
      * Add the player to a free slot if there is one.
-     * Return true if the player was added, false if not.
+     * @return true if the player was added, false if not.
      */
     fun addPlayer(player: Player): Boolean {
         if (player1 == null) {
@@ -25,7 +29,7 @@ class SelectedPlayers() {
     }
 
     /**
-     * Return a two-element array containing the names of the selected players.
+     * @return a two-element array containing the names of the selected players.
      * Empty strings are used if the slot is empty.
      */
     fun getPlayerNames(): List<String> {
@@ -44,7 +48,10 @@ class SelectedPlayers() {
         return names
     }
 
-    fun playerPresent() : Boolean {
+    /**
+     * @return true if there is at least one player selected.
+     */
+    fun playerPresent(): Boolean {
         if (player1 != null || player2 != null) {
             return true
         }

@@ -24,11 +24,22 @@ import com.google.gson.Gson
 import kotlinx.coroutines.*
 import org.json.JSONObject
 
+/**
+ * Maintains the popup used for searching for and selecting players.
+ */
 class PlayerSelect : AppCompatActivity() {
     private var displayedPlayers: MutableList<Player> = ArrayList()
     var selectedPlayers: SelectedPlayers = SelectedPlayers()
     private lateinit var searchAdapter: ArrayAdapter<Player>
 
+    /**
+     * Create the dialog view. Initialise event handlers.
+     * @param ctx: application context.
+     * @param inflater: used to inflate the dialog view.
+     * @param controller: used to make API requests for searching.
+     * @param onDismissCallback: function to execute when the dialog is closed.
+     * @return AlertDialog.
+     */
     fun createSearchDialog(
         ctx: Context,
         inflater: LayoutInflater,
@@ -49,8 +60,6 @@ class PlayerSelect : AppCompatActivity() {
         player1Text.text = ""
         player2Text.text = ""
 
-
-        // Event handling for widgets on the popup view
         searchAdapter = ArrayAdapter(
             ctx,
             android.R.layout.simple_list_item_1,
@@ -73,6 +82,7 @@ class PlayerSelect : AppCompatActivity() {
             }
         }
 
+        // Add the selected player to SelectedPlayers array on click if there's room.
         searchResultList.setOnItemClickListener { parent, view, position, id ->
             val vibrateLength: Long = 500
             val vibrator = ctx.getSystemService(VIBRATOR_SERVICE) as Vibrator
@@ -109,6 +119,7 @@ class PlayerSelect : AppCompatActivity() {
             player2Text.text = ""
         }
 
+        // Call Google with a search when player cards are clicked.
         player1Card.setOnClickListener {
             if (selectedPlayers.player1 != null) {
                 val intent: Intent = Intent(Intent.ACTION_WEB_SEARCH)
@@ -203,6 +214,10 @@ private fun EditText.afterTextChangedDebounce(delayMillis: Long, handler: (Strin
 /**
  * Get layout params for a list view.
  * Used to set the search list view height to not be too big.
+ * @param searchAdapter: list view's adapter.
+ * @param numItems: how many items high to set height.
+ * @param listView: list view to use for measurement.
+ * @return layout params with measured height.
  */
 private fun getNewHeightParam(
     searchAdapter: ArrayAdapter<Player>,

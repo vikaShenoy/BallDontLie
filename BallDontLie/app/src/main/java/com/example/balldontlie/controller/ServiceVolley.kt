@@ -7,11 +7,25 @@ import com.android.volley.VolleyLog
 import com.android.volley.toolbox.JsonObjectRequest
 import org.json.JSONObject
 
+/**
+ * Implementation of Volley controller to make API requests.
+ */
 class ServiceVolley : ServiceInterface {
-    val TAG = ServiceVolley::class.java.simpleName
+    val TAG: String = ServiceVolley::class.java.simpleName
     val basePath = "https://balldontlie.io/api/v1/"
 
-    override fun get(path: String, params: JSONObject, completionHandler: (response: JSONObject?) -> Unit) {
+    /**
+     * Make a GET request to an API.
+     * @param path: request path.
+     * @param params: parameters to send in the body of the request.
+     * NOTE - the BallDontLie API uses parameters in the path not the body, typically.
+     * @param completionHandler: function to execute on successful response.
+     */
+    override fun get(
+        path: String,
+        params: JSONObject,
+        completionHandler: (response: JSONObject?) -> Unit
+    ) {
         val jsonObjReq = object : JsonObjectRequest(Method.POST, basePath + path, params,
             Response.Listener<JSONObject> { response ->
                 Log.d(TAG, "/get request OK! Response: $response")

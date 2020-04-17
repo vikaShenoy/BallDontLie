@@ -1,5 +1,8 @@
 package com.example.balldontlie.model
 
+/**
+ * Data class to represent NBA statistics.
+ */
 data class Stats(
     val id: Int = 0,
     val ast: Double = 0.0,

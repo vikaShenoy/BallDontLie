@@ -8,20 +8,22 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.balldontlie.R
 import com.example.balldontlie.model.Schedule
 
+/**
+ * Manage the schedule fragment's schedule cards.
+ */
 class ScheduleAdapter(private val scheduleData: List<Schedule>) :
     RecyclerView.Adapter<ScheduleAdapter.CardViewHolder>() {
-    // Replace test data with cards and such
 
-    class CardViewHolder(private val cardView : CardView) : RecyclerView.ViewHolder(cardView) {
-        val score = cardView.findViewById<TextView>(R.id.scoreText)
-        val team = cardView.findViewById<TextView>(R.id.teamText)
-        val stadium = cardView.findViewById<TextView>(R.id.stadiumText)
+    class CardViewHolder(private val cardView: CardView) : RecyclerView.ViewHolder(cardView) {
+        val score: TextView = cardView.findViewById<TextView>(R.id.scoreText)
+        val team: TextView = cardView.findViewById<TextView>(R.id.teamText)
+        val stadium: TextView = cardView.findViewById<TextView>(R.id.stadiumText)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
-        // TODO - Ben said something about binding listeners here with adapterPosition
         val cardView = LayoutInflater.from(
-            parent.context).inflate(R.layout.schedule_card, parent, false) as CardView
+            parent.context
+        ).inflate(R.layout.schedule_card, parent, false) as CardView
         return CardViewHolder(
             cardView
         )

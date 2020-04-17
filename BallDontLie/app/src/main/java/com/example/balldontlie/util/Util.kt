@@ -10,6 +10,9 @@ import org.json.JSONObject
 
 /**
  * Cast the json stats response to a Stats object and return it.
+ * NOTE - there should only be one element in the data array.
+ * @param response: API response.
+ * @return stats object representing season averages.
  */
 fun getSeasonStatsFromResponse(response: JSONObject?): Stats? {
     var stats: Stats? = null
@@ -21,7 +24,9 @@ fun getSeasonStatsFromResponse(response: JSONObject?): Stats? {
 }
 
 /**
- * Cast the json stats response to a Stats object and return it.
+ * Cast the json stats response to a list of Stats objects and return it.
+ * @param response: API response.
+ * @return ArrayList containing stats object representing multiple games stats.
  */
 fun getGameStatsFromResponse(response: JSONObject?): MutableList<Stats> {
     val stats = ArrayList<Stats>()
@@ -36,6 +41,11 @@ fun getGameStatsFromResponse(response: JSONObject?): MutableList<Stats> {
  * Iterate through game stats list and marshal the stats into a data list for the stats chart.
  * Becomes a list of (x=Days ago, y=points) Entry objects.
  * Sort based on the x values as this is required by MPAndroidChart.
+ * @param gameStats: list of stat objects to be converted.
+ * @param referenceDate: date to use in the chart data values (x value)
+ * @param selectedStat: string representing the property to get from Stats at runtime
+ * via reflection (eg pts or reb properties).
+ * @return sorted list of <Entry> to be used as chart data.
  */
 fun getChartDataFromStats(
     gameStats: MutableList<Stats>?,
@@ -49,7 +59,8 @@ fun getChartDataFromStats(
             val daysSince = getDaysSince(referenceDate, date)
             // TODO - investigate changing the stat model to use floats instead of doubles
             val statValue = stats.javaClass.getMethod(
-                "get${selectedStat}").invoke(stats).toString().toFloat()
+                "get${selectedStat}"
+            ).invoke(stats).toString().toFloat()
             data.add(Entry(daysSince, statValue))
         }
     }
@@ -57,8 +68,26 @@ fun getChartDataFromStats(
 }
 
 /**
+ * Get a list of schedule objects from JSON response.
+ * @param response: API response.
+ * @param teamId: id of the team creating a schedule for.
+ * @return a list of schedule objects to be used for schedule cards.
+ */
+fun getScheduleData(response: JSONObject?, teamId: Int): MutableList<Schedule> {
+    val gameData: ArrayList<Game> = ArrayList()
+    val data = JSONObject(response.toString()).getJSONArray("data")
+    for (i in 0 until data.length()) {
+        gameData.add(Gson().fromJson(data.getString(i), Game::class.java))
+    }
+    return gamesToSchedule(gameData, teamId)
+}
+
+/**
  * Loop through a list of games and convert them to the format needed to be displayed
  * in schedule cards on the recycler view on the schedule fragment.
+ * @param gameList: list of Games.
+ * @param teamId: id of the team playing the games. Used to check whether the game is home or away.
+ * @return a list of schedule objects to be used for schedule cards.
  */
 fun gamesToSchedule(gameList: MutableList<Game>, teamId: Int): MutableList<Schedule> {
     val scheduleList: MutableList<Schedule> = ArrayList<Schedule>()
@@ -82,13 +111,4 @@ fun gamesToSchedule(gameList: MutableList<Game>, teamId: Int): MutableList<Sched
         }
     }
     return scheduleList
-}
-
-fun getScheduleData(response: JSONObject?, teamId: Int): MutableList<Schedule> {
-    val gameData: ArrayList<Game> = ArrayList()
-    val data = JSONObject(response.toString()).getJSONArray("data")
-    for (i in 0 until data.length()) {
-        gameData.add(Gson().fromJson(data.getString(i), Game::class.java))
-    }
-    return gamesToSchedule(gameData, teamId)
 }

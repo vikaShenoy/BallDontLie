@@ -1,5 +1,8 @@
 package com.example.balldontlie.model
 
+/**
+ * Represents an NBA player.
+ */
 data class Player(
     val id: Int = 0,
     val first_name: String = "",

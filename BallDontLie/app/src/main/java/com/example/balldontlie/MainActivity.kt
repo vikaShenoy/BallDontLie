@@ -20,18 +20,15 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialise components
         viewPager = findViewById(R.id.view_pager)
         bottomNavigationView = findViewById(R.id.bottom_navigation_view)
         mainPagerAdapter = MainPagerAdapter(
             supportFragmentManager
         )
 
-        // Items to be displayed
         mainPagerAdapter.setItems(arrayListOf(MainScreen.SCHEDULE,
             MainScreen.COMPARE, MainScreen.PERFORMANCE))
 
-        // Default screen
         val defaultScreen = MainScreen.SCHEDULE
         scrollToScreen(defaultScreen)
         selectBottomNavigationViewMenuItem(defaultScreen.menuItemId)

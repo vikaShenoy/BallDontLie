@@ -80,15 +80,22 @@ class ScheduleFragment : Fragment() {
         }
     }
 
+    /**
+     * Set the season toggle elements.
+     */
     private fun initSeasonToggle() {
         val toggle: MultiStateToggleButton? = activity?.findViewById(R.id.season_toggle)
         toggle?.setOnValueChangedListener { position ->
             val selectedSeason = resources.getStringArray(R.array.season_array)[position]
             setSeason(selectedSeason)
-            refreshSchedule()
         }
     }
 
+    /**
+     * Call the API and set the team map to contain a map of ("HOU", 11) (team name to ID).
+     * Init the team spinner with the contents of the map.
+     * @param response: API response containing team information.
+     */
     private fun fillTeamMap(response: JSONObject?) {
         val data = JSONObject(response.toString()).getJSONArray("data")
         for (i in 0 until data.length()) {
@@ -98,6 +105,9 @@ class ScheduleFragment : Fragment() {
         initTeamSpinner()
     }
 
+    /**
+     * Set the team spinner to contain the items from the team map.
+     */
     private fun initTeamSpinner() {
         ArrayAdapter(
             ctx,
@@ -117,7 +127,6 @@ class ScheduleFragment : Fragment() {
             ) {
                 val selectedTeam = parent?.getItemAtPosition(position) as String
                 setTeamId(selectedTeam)
-                refreshSchedule()
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {}
@@ -125,6 +134,11 @@ class ScheduleFragment : Fragment() {
 
     }
 
+    /**
+     * Called when the user changes the season toggle.
+     * Update the date state.
+     * @param selectedSeason represents prev, current, future games.
+     */
     private fun setSeason(selectedSeason: String) {
         when (selectedSeason) {
             getString(R.string.season_past) -> {
@@ -142,13 +156,21 @@ class ScheduleFragment : Fragment() {
                 endDate = getSeasonEndDate()
             }
         }
+        refreshSchedule()
     }
 
+    /**
+     * Update the selected team state.
+     */
     private fun setTeamId(selectedTeam: String) {
         teamId = teamMap[selectedTeam]!!
         refreshSchedule()
     }
 
+    /**
+     * Make an API call for fresh data.
+     * Called when the team or season state changes.
+     */
     private fun refreshSchedule() {
         val path = "games?start_date=${startDate}&end_date=${
         endDate}&team_ids[]=${teamId}"
@@ -159,6 +181,10 @@ class ScheduleFragment : Fragment() {
     }
 
 
+    /**
+     * Clear previous data and set the schedule list to display fresh data.
+     * @param data: Schedule data to display on the cards.
+     */
     private fun updateView(data: List<Schedule>) {
         scheduleData.clear()
         scheduleData.addAll(data)
