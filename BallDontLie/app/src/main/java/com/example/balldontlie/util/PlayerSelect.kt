@@ -62,12 +62,14 @@ class PlayerSelect : AppCompatActivity() {
         searchText.afterTextChangedDebounce(searchDelay) { searchTerm ->
             controller.get("players?search=$searchTerm", JSONObject()) { response ->
                 populateSearch(response)
-                searchResultList.layoutParams =
-                    getNewHeightParam(
-                        searchAdapter = searchAdapter,
-                        numItems = 3,
-                        listView = searchResultList
-                    )
+                if (!searchAdapter.isEmpty) {
+                    searchResultList.layoutParams =
+                        getNewHeightParam(
+                            searchAdapter = searchAdapter,
+                            numItems = 3,
+                            listView = searchResultList
+                        )
+                }
             }
         }
 

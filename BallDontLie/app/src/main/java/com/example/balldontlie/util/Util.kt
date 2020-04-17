@@ -1,8 +1,10 @@
 package com.example.balldontlie.util
 
+import android.util.Log
 import com.example.balldontlie.model.Game
 import com.example.balldontlie.model.Schedule
 import com.example.balldontlie.model.Stats
+import com.github.mikephil.charting.data.Entry
 import com.google.gson.Gson
 import org.json.JSONObject
 
@@ -28,7 +30,27 @@ fun getGameStatsFromResponse(response: JSONObject?): MutableList<Stats> {
         stats.add(Gson().fromJson(data.getString(i), Stats::class.java))
     }
     return stats
+}
 
+/**
+ * Iterate through game stats list and marshal the stats into a data list for the stats chart.
+ * Becomes a list of (x=Days ago, y=points) Entry objects.
+ * Sort based on the x values as this is required by MPAndroidChart.
+ */
+fun getChartDataFromStats(gameStats: MutableList<Stats>?, referenceDate: String): List<Entry> {
+    // Days ago - stats
+    val data = ArrayList<Entry>()
+    if (gameStats != null) {
+        for (stats in gameStats) {
+            val date = stats.game!!.date.split("T")[0]
+            Log.i("statscheck", "ref: ${referenceDate}, date: $date")
+            val daysSince = getDaysSince(referenceDate, date)
+            data.add(Entry(daysSince, stats.pts.toFloat()))
+        }
+    }
+    val sortedData = data.sortedWith(compareBy { it.x })
+    Log.i("stats", sortedData.toString())
+    return sortedData
 }
 
 /**
@@ -59,7 +81,7 @@ fun gamesToSchedule(gameList: MutableList<Game>, teamId: Int): MutableList<Sched
     return scheduleList
 }
 
-fun getScheduleData(response: JSONObject?, teamId : Int) : MutableList<Schedule> {
+fun getScheduleData(response: JSONObject?, teamId: Int): MutableList<Schedule> {
     val gameData: ArrayList<Game> = ArrayList()
     val data = JSONObject(response.toString()).getJSONArray("data")
     for (i in 0 until data.length()) {

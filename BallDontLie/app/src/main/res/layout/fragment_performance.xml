@@ -51,7 +51,7 @@
   <com.github.mikephil.charting.charts.LineChart
       android:id="@+id/statsChart"
       android:layout_width="match_parent"
-      android:layout_height="500dp"
+      android:layout_height="300dp"
       android:layout_margin="8dp"
       android:layout_marginStart="8dp"
       android:layout_marginEnd="8dp"

@@ -9,8 +9,8 @@ import java.util.*
  */
 fun getCurrentDate(): String {
     val currentDate = Calendar.getInstance().time
-    val apiDatePattern = "yyyy-MM-dd"
-    val formatter = SimpleDateFormat(apiDatePattern)
+    val pattern = "yyyy-MM-dd"
+    val formatter = SimpleDateFormat(pattern)
     return formatter.format(currentDate)
 }
 
@@ -74,11 +74,27 @@ fun getRegularSeason(): String {
  * @param daysAgo: number of days to subtract.
  */
 fun getPreviousDate(daysAgo: Int) : String {
-    val apiDatePattern = "yyyy-MM-dd"
-    val formatter = SimpleDateFormat(apiDatePattern)
+    val pattern = "yyyy-MM-dd"
+    val formatter = SimpleDateFormat(pattern)
 
     val date = Calendar.getInstance()
     date.add(Calendar.DAY_OF_YEAR, -1 * daysAgo)
     val previousDate = date.time
     return formatter.format(previousDate)
+}
+
+
+/**
+ * Find the difference (in number of days) between the two dates passed.
+ */
+fun getDaysSince(referenceDate : String, date: String) : Float {
+    val pattern = "yyyy-MM-dd"
+    val formatter = SimpleDateFormat(pattern)
+
+    val formattedRefDate = formatter.parse(referenceDate)
+    val formattedDate = formatter.parse(date)
+
+    val differenceInTime = (formattedDate.time - formattedRefDate.time).toFloat()
+    return differenceInTime / (1000 * 3600 * 24)
+
 }
