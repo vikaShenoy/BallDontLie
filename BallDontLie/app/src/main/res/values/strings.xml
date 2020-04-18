@@ -13,5 +13,8 @@
     <string name="clear_button">Clear</string>
 
     <string name="stat_header">Stat</string>
-    p
+
+    <string name="home">Home</string>
+    <string name="away">Away</string>
+
 </resources>

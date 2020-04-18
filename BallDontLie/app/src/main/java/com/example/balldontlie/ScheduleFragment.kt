@@ -2,6 +2,7 @@ package com.example.balldontlie
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -38,8 +39,8 @@ class ScheduleFragment : Fragment() {
     private var teamMap = mutableMapOf<String, Int>()
 
     private var teamId: Int = TEAM_DEFAULT_ID
-    private var startDate = getCurrentDate()
-    private var endDate = getSeasonEndDate()
+    private var startDate = getSeasonStartDate()
+    private var endDate = getCurrentDate()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,7 +57,7 @@ class ScheduleFragment : Fragment() {
             false
         )
         viewAdapter =
-            ScheduleAdapter(scheduleData)
+            ScheduleAdapter(scheduleData, ctx)
         viewManager = LinearLayoutManager(activity)
         recyclerView = rootView.findViewById(R.id.recyclerView)
         recyclerView.apply {
@@ -67,7 +68,6 @@ class ScheduleFragment : Fragment() {
         val service: ServiceInterface = ServiceVolley()
         controller = APIController(service)
 
-        refreshSchedule()
         return rootView
     }
 
@@ -75,35 +75,25 @@ class ScheduleFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         controller.get("teams", JSONObject()) { response ->
-            fillTeamMap(response)
+            teamMap = fillTeamMap(response)
+            initTeamSpinner()
             initSeasonToggle()
         }
     }
+
 
     /**
      * Set the season toggle elements.
      */
     private fun initSeasonToggle() {
         val toggle: MultiStateToggleButton? = activity?.findViewById(R.id.season_toggle)
+        toggle?.setElements(R.array.season_array, 0)
         toggle?.setOnValueChangedListener { position ->
             val selectedSeason = resources.getStringArray(R.array.season_array)[position]
             setSeason(selectedSeason)
         }
     }
 
-    /**
-     * Call the API and set the team map to contain a map of ("HOU", 11) (team name to ID).
-     * Init the team spinner with the contents of the map.
-     * @param response: API response containing team information.
-     */
-    private fun fillTeamMap(response: JSONObject?) {
-        val data = JSONObject(response.toString()).getJSONArray("data")
-        for (i in 0 until data.length()) {
-            val team: Team = Gson().fromJson(data.getString(i), Team::class.java)
-            teamMap[team.abbreviation] = team.id
-        }
-        initTeamSpinner()
-    }
 
     /**
      * Set the team spinner to contain the items from the team map.
@@ -140,6 +130,7 @@ class ScheduleFragment : Fragment() {
      * @param selectedSeason represents prev, current, future games.
      */
     private fun setSeason(selectedSeason: String) {
+        Log.i("stats", "set season called")
         when (selectedSeason) {
             getString(R.string.season_past) -> {
                 startDate = getSeasonStartDate()
@@ -172,10 +163,13 @@ class ScheduleFragment : Fragment() {
      * Called when the team or season state changes.
      */
     private fun refreshSchedule() {
+        Log.i("Stats", "refreshScheduleCalled")
         val path = "games?start_date=${startDate}&end_date=${
         endDate}&team_ids[]=${teamId}"
+        Log.i("Stats", path)
         controller.get(path = path, params = JSONObject()) { response ->
             val scheduleData = getScheduleData(response, teamId)
+            Log.i("stats", scheduleData.toString())
             updateView(scheduleData)
         }
     }

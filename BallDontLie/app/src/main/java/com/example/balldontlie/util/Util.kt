@@ -1,9 +1,13 @@
 package com.example.balldontlie.util
 
+import android.content.res.Resources
+import android.net.wifi.hotspot2.pps.HomeSp
 import android.util.Half.toFloat
+import com.example.balldontlie.R
 import com.example.balldontlie.model.Game
 import com.example.balldontlie.model.Schedule
 import com.example.balldontlie.model.Stats
+import com.example.balldontlie.model.Team
 import com.github.mikephil.charting.data.Entry
 import com.google.gson.Gson
 import org.json.JSONObject
@@ -96,19 +100,38 @@ fun gamesToSchedule(gameList: MutableList<Game>, teamId: Int): MutableList<Sched
             val score: String = "${game.home_team_score} - ${game.visitor_team_score}"
             val schedule = Schedule(
                 score = score,
-                team = game.visitor_team!!.full_name,
-                stadium = game.home_team.city
+                team = game.visitor_team!!.city,
+                stadium = HOME,
+                date = formatDate(game.date, "dd/MM"),
+                win = game.home_team_score >= game.visitor_team_score
             )
             scheduleList.add(schedule)
         } else {
             val score: String = "${game.visitor_team_score} - ${game.home_team_score}"
             val schedule = Schedule(
                 score = score,
-                team = game.home_team!!.full_name,
-                stadium = game.home_team.city
+                team = game.home_team!!.city,
+                stadium = AWAY,
+                date = formatDate(game.date, "dd/MM"),
+                win = game.home_team_score <= game.visitor_team_score
             )
             scheduleList.add(schedule)
         }
     }
     return scheduleList
+}
+
+/**
+ * Call the API and set the team map to contain a map of ("HOU", 11) (team name to ID).
+ * Init the team spinner with the contents of the map.
+ * @param response: API response containing team information.
+ */
+fun fillTeamMap(response: JSONObject?) : MutableMap<String, Int> {
+    val teamMap : MutableMap<String, Int> = mutableMapOf()
+    val data = JSONObject(response.toString()).getJSONArray("data")
+    for (i in 0 until data.length()) {
+        val team: Team = Gson().fromJson(data.getString(i), Team::class.java)
+        teamMap[team.abbreviation] = team.id
+    }
+    return teamMap
 }

@@ -20,6 +20,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
+        android:background="@color/cardview_dark_background"
         app:layout_constraintBottom_toTopOf="@+id/recyclerView"
         app:layout_constraintEnd_toStartOf="@id/season_toggle"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,8 +40,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"
         app:mstbPrimaryColor="@color/button_primary_color"
-        app:mstbSecondaryColor="@color/button_secondary_color"
-        mstb:values="@array/season_array" />
+        app:mstbSecondaryColor="@color/button_secondary_color" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

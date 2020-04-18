@@ -23,3 +23,6 @@ const val TIME_DEFAULT: String = "3 Months"
 const val STATS_DEFAULT: String = "Points"
 const val TEAM_DEFAULT_NAME: String = "HOU"
 const val TEAM_DEFAULT_ID: Int = 11
+
+const val HOME: String = "Home"
+const val AWAY: String = "Away"

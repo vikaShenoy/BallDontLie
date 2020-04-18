@@ -3,14 +3,16 @@ package com.example.balldontlie.util
 import java.text.SimpleDateFormat
 import java.util.*
 
+// Date format returned in BallDontLie's data.
+const val API_DATE_PATTERN: String = "yyyy-MM-dd"
+
 /**
  * Return the current date.
  * Format is a string of yyyy-MM-dd as this is what the balldontlie api takes for date params.
  */
 fun getCurrentDate(): String {
     val currentDate = Calendar.getInstance().time
-    val pattern = "yyyy-MM-dd"
-    val formatter = SimpleDateFormat(pattern)
+    val formatter = SimpleDateFormat(API_DATE_PATTERN)
     return formatter.format(currentDate)
 }
 
@@ -75,8 +77,7 @@ fun getRegularSeason(): String {
  * @return String representing the previous.
  */
 fun getPreviousDate(daysAgo: Int?): String {
-    val pattern = "yyyy-MM-dd"
-    val formatter = SimpleDateFormat(pattern)
+    val formatter = SimpleDateFormat(API_DATE_PATTERN)
 
     val date = Calendar.getInstance()
     date.add(Calendar.DAY_OF_YEAR, -1 * daysAgo!!)
@@ -92,8 +93,7 @@ fun getPreviousDate(daysAgo: Int?): String {
  * @return number of days between the two dates.
  */
 fun getDaysSince(referenceDate: String, date: String): Float {
-    val pattern = "yyyy-MM-dd"
-    val formatter = SimpleDateFormat(pattern)
+    val formatter = SimpleDateFormat(API_DATE_PATTERN)
 
     val formattedRefDate = formatter.parse(referenceDate)
     val formattedDate = formatter.parse(date)
@@ -101,4 +101,19 @@ fun getDaysSince(referenceDate: String, date: String): Float {
     val differenceInTime = (formattedDate.time - formattedRefDate.time).toFloat()
     return differenceInTime / (1000 * 3600 * 24)
 
+}
+
+/**
+ * Format the date with the new pattern provided.
+ * @param dateTime string containing the date and time. Needs to be split.
+ * @param newPattern pattern to return the string with.
+ * @return formatted date string.
+ */
+fun formatDate(dateTime: String, newPattern: String): String {
+    val formatter = SimpleDateFormat(API_DATE_PATTERN)
+    val newFormatter = SimpleDateFormat(newPattern)
+
+    val dateString = dateTime.split("T")[0]
+    val date = formatter.parse(dateString)
+    return newFormatter.format(date)
 }
