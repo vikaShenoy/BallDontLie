@@ -77,7 +77,11 @@
       <TextView
           android:id="@+id/player1Text"
           android:layout_width="match_parent"
-          android:layout_height="match_parent" />
+          android:layout_height="match_parent"
+          android:layout_margin="8dp"
+          android:fontFamily="sans-serif-light"
+          android:textAlignment="center"
+          android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
     </androidx.cardview.widget.CardView>
 
@@ -97,7 +101,11 @@
       <TextView
           android:id="@+id/player2Text"
           android:layout_width="match_parent"
-          android:layout_height="match_parent" />
+          android:layout_height="match_parent"
+          android:layout_margin="8dp"
+          android:fontFamily="sans-serif-light"
+          android:textAlignment="center"
+          android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
     </androidx.cardview.widget.CardView>
 

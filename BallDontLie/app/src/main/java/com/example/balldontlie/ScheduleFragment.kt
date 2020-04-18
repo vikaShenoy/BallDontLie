@@ -166,8 +166,6 @@ class ScheduleFragment : Fragment() {
         endDate}&team_ids[]=${teamId}&per_page=100"
         controller.get(path = path, params = JSONObject()) { response ->
             val scheduleData = getScheduleData(response, teamId)
-            Log.i("stats", scheduleData.toString())
-            Log.i("stats", scheduleData.size.toString())
             updateView(scheduleData)
         }
     }
