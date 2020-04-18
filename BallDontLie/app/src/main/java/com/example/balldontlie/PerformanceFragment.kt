@@ -13,6 +13,8 @@ import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceVolley
 import com.example.balldontlie.model.SelectedPlayers
 import com.example.balldontlie.util.*
+import com.github.mikephil.charting.components.Legend
+import com.github.mikephil.charting.components.LegendEntry
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.DataSet
 import com.github.mikephil.charting.data.Entry
@@ -198,11 +200,15 @@ class PerformanceFragment : Fragment() {
 
         val p1Data = getChartDataFromStats(p1Stats, referenceDate, selectedStat)
         val p1DataSet = LineDataSet(p1Data, selectedPlayers.player1?.last_name)
+        p1DataSet.color = resources.getColor(R.color.colorAccent)
+        p1DataSet.circleColors = listOf(resources.getColor(R.color.colorAccent))
         lineData.addDataSet(p1DataSet)
 
         if (p2Stats != null) {
             val p2Data = getChartDataFromStats(p2Stats, referenceDate, selectedStat)
             val p2DataSet = LineDataSet(p2Data, selectedPlayers.player2?.last_name)
+            p1DataSet.color = resources.getColor(R.color.colorPrimary)
+            p1DataSet.circleColors = listOf(resources.getColor(R.color.colorPrimary))
             lineData.addDataSet(p2DataSet)
         }
 
@@ -211,14 +217,11 @@ class PerformanceFragment : Fragment() {
         statsChart.xAxis.isEnabled = false
         statsChart.xAxis.setDrawGridLines(false)
 
-        statsChart.axisLeft.textColor = resources.getColor(R.color.colorPrimary)
+        statsChart.axisLeft.textColor = resources.getColor(R.color.colorAccent)
         statsChart.axisLeft.setDrawGridLines(false)
         statsChart.axisRight.isEnabled = false
 
-        statsChart.extraBottomOffset = 50f
-
-        statsChart.legend.isWordWrapEnabled = true
-
+        statsChart.extraBottomOffset = 100f
         statsChart.invalidate()
     }
 

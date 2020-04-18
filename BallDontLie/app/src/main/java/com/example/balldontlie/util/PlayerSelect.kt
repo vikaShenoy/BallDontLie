@@ -75,7 +75,7 @@ class PlayerSelect : AppCompatActivity() {
                     searchResultList.layoutParams =
                         getNewHeightParam(
                             searchAdapter = searchAdapter,
-                            numItems = 3,
+                            numItems = 2,
                             listView = searchResultList
                         )
                 }

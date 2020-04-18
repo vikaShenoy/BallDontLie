@@ -168,7 +168,6 @@ class CompareFragment() : Fragment() {
         )
         row.statP1.text = p1Name
         row.statP2.text = p2Name
-        row.statP1.setTextColor(resources.getColor(R.color.colorPrimary))
         return row
     }
 
