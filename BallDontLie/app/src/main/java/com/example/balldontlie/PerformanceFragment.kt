@@ -1,6 +1,7 @@
 package com.example.balldontlie
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -139,8 +140,9 @@ class PerformanceFragment : Fragment() {
     private fun showSearchDialog() {
         playerSelect.selectedPlayers.clearPlayers()
         selectedPlayers.clearPlayers()
+        val webSearch: (Intent) -> Unit = { startActivity(it) }
         val searchDialog = playerSelect.createSearchDialog(
-            ctx, viewInflater, controller
+            ctx, viewInflater, controller, webSearch
         ) {
             selectedPlayers = playerSelect.selectedPlayers
             refreshChartStats()

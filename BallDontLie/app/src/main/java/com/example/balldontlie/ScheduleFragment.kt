@@ -130,7 +130,6 @@ class ScheduleFragment : Fragment() {
      * @param selectedSeason represents prev, current, future games.
      */
     private fun setSeason(selectedSeason: String) {
-        Log.i("stats", "set season called")
         when (selectedSeason) {
             getString(R.string.season_past) -> {
                 startDate = getSeasonStartDate()
@@ -163,13 +162,12 @@ class ScheduleFragment : Fragment() {
      * Called when the team or season state changes.
      */
     private fun refreshSchedule() {
-        Log.i("Stats", "refreshScheduleCalled")
         val path = "games?start_date=${startDate}&end_date=${
-        endDate}&team_ids[]=${teamId}"
-        Log.i("Stats", path)
+        endDate}&team_ids[]=${teamId}&per_page=100"
         controller.get(path = path, params = JSONObject()) { response ->
             val scheduleData = getScheduleData(response, teamId)
             Log.i("stats", scheduleData.toString())
+            Log.i("stats", scheduleData.size.toString())
             updateView(scheduleData)
         }
     }

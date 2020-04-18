@@ -1,9 +1,5 @@
 package com.example.balldontlie.util
 
-import android.content.res.Resources
-import android.net.wifi.hotspot2.pps.HomeSp
-import android.util.Half.toFloat
-import com.example.balldontlie.R
 import com.example.balldontlie.model.Game
 import com.example.balldontlie.model.Schedule
 import com.example.balldontlie.model.Stats
@@ -11,6 +7,10 @@ import com.example.balldontlie.model.Team
 import com.github.mikephil.charting.data.Entry
 import com.google.gson.Gson
 import org.json.JSONObject
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+const val DATE_PATTERN: String = "dd/MM/yyyy"
 
 /**
  * Cast the json stats response to a Stats object and return it.
@@ -73,11 +73,12 @@ fun getChartDataFromStats(
 
 /**
  * Get a list of schedule objects from JSON response.
+ * Sort the list of schedule objects by date.
  * @param response: API response.
  * @param teamId: id of the team creating a schedule for.
  * @return a list of schedule objects to be used for schedule cards.
  */
-fun getScheduleData(response: JSONObject?, teamId: Int): MutableList<Schedule> {
+fun getScheduleData(response: JSONObject?, teamId: Int): List<Schedule> {
     val gameData: ArrayList<Game> = ArrayList()
     val data = JSONObject(response.toString()).getJSONArray("data")
     for (i in 0 until data.length()) {
@@ -93,7 +94,7 @@ fun getScheduleData(response: JSONObject?, teamId: Int): MutableList<Schedule> {
  * @param teamId: id of the team playing the games. Used to check whether the game is home or away.
  * @return a list of schedule objects to be used for schedule cards.
  */
-fun gamesToSchedule(gameList: MutableList<Game>, teamId: Int): MutableList<Schedule> {
+fun gamesToSchedule(gameList: MutableList<Game>, teamId: Int): List<Schedule> {
     val scheduleList: MutableList<Schedule> = ArrayList<Schedule>()
     for (game in gameList) {
         if (game.home_team?.id == teamId) {
@@ -102,7 +103,7 @@ fun gamesToSchedule(gameList: MutableList<Game>, teamId: Int): MutableList<Sched
                 score = score,
                 team = game.visitor_team!!.city,
                 stadium = HOME,
-                date = formatDate(game.date, "dd/MM"),
+                date = formatDate(game.date, DATE_PATTERN),
                 win = game.home_team_score >= game.visitor_team_score
             )
             scheduleList.add(schedule)
@@ -112,13 +113,17 @@ fun gamesToSchedule(gameList: MutableList<Game>, teamId: Int): MutableList<Sched
                 score = score,
                 team = game.home_team!!.city,
                 stadium = AWAY,
-                date = formatDate(game.date, "dd/MM"),
+                date = formatDate(game.date, DATE_PATTERN),
                 win = game.home_team_score <= game.visitor_team_score
             )
             scheduleList.add(schedule)
         }
     }
-    return scheduleList
+    return scheduleList.sortedByDescending { dateSorter(it.date) }
+}
+
+val dateSorter: (String) -> LocalDate = {
+    LocalDate.parse(it, DateTimeFormatter.ofPattern(DATE_PATTERN))
 }
 
 /**
@@ -126,8 +131,8 @@ fun gamesToSchedule(gameList: MutableList<Game>, teamId: Int): MutableList<Sched
  * Init the team spinner with the contents of the map.
  * @param response: API response containing team information.
  */
-fun fillTeamMap(response: JSONObject?) : MutableMap<String, Int> {
-    val teamMap : MutableMap<String, Int> = mutableMapOf()
+fun fillTeamMap(response: JSONObject?): MutableMap<String, Int> {
+    val teamMap: MutableMap<String, Int> = mutableMapOf()
     val data = JSONObject(response.toString()).getJSONArray("data")
     for (i in 0 until data.length()) {
         val team: Team = Gson().fromJson(data.getString(i), Team::class.java)

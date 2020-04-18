@@ -1,6 +1,7 @@
 package com.example.balldontlie
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -60,8 +61,11 @@ class CompareFragment() : Fragment() {
         statsTable.removeAllViews()
         playerSelect.selectedPlayers.clearPlayers()
         selectedPlayers.clearPlayers()
+
+        val webSearch: (Intent) -> Unit = { startActivity(it) }
+
         val searchDialog = playerSelect.createSearchDialog(
-            ctx, viewInflater, controller
+            ctx, viewInflater, controller, webSearch
         ) {
             selectedPlayers = playerSelect.selectedPlayers
             showPlayerStats()

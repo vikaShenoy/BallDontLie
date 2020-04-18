@@ -44,6 +44,7 @@ class PlayerSelect : AppCompatActivity() {
         ctx: Context,
         inflater: LayoutInflater,
         controller: APIController,
+        webSearch: (Intent) -> Unit,
         onDismissCallback: () -> Unit
     ): AlertDialog {
         val searchPopup: View = inflater.inflate(R.layout.search_popup, null)
@@ -127,7 +128,7 @@ class PlayerSelect : AppCompatActivity() {
                     SearchManager.QUERY,
                     "${selectedPlayers.player1!!.first_name} ${selectedPlayers.player1!!.last_name}"
                 )
-                startActivity(intent)
+                webSearch(intent)
             }
         }
 
@@ -138,7 +139,7 @@ class PlayerSelect : AppCompatActivity() {
                     SearchManager.QUERY,
                     "${selectedPlayers.player2!!.first_name} ${selectedPlayers.player2!!.last_name}"
                 )
-                startActivity(intent)
+                webSearch(intent)
             }
         }
 
