@@ -13,6 +13,7 @@ import com.example.balldontlie.controller.APIController
 import com.example.balldontlie.controller.ServiceVolley
 import com.example.balldontlie.model.SelectedPlayers
 import com.example.balldontlie.util.*
+import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.DataSet
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -206,6 +207,18 @@ class PerformanceFragment : Fragment() {
         }
 
         statsChart.data = lineData
+
+        statsChart.xAxis.isEnabled = false
+        statsChart.xAxis.setDrawGridLines(false)
+
+        statsChart.axisLeft.textColor = resources.getColor(R.color.colorPrimary)
+        statsChart.axisLeft.setDrawGridLines(false)
+        statsChart.axisRight.isEnabled = false
+
+        statsChart.extraBottomOffset = 50f
+
+        statsChart.legend.isWordWrapEnabled = true
+
         statsChart.invalidate()
     }
 
