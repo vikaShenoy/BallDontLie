@@ -94,13 +94,25 @@ class PlayerSelect : AppCompatActivity() {
             )
             val selectedPlayer: Player = displayedPlayers[position]
             val added: Boolean = selectedPlayers.addPlayer(selectedPlayer)
-            if (!added) {
+            val currentSeason = getRegularSeason()
+
+            // Make a request for the players stats if they were a valid addition, else show toast
+            if (added) {
+                controller.get(
+                    path = "season_averages?season=${currentSeason}" +
+                            "&player_ids[]=${selectedPlayer.id}",
+                    params = JSONObject()
+                ) { response ->
+                    selectedPlayer.seasonStats = getSeasonStatsFromResponse(response)
+                }
+            } else {
                 Toast.makeText(
                     ctx,
                     "Clear players before adding more",
                     Toast.LENGTH_SHORT
                 ).show()
             }
+
             val names: List<String> = selectedPlayers.getPlayerNames()
             player1Text.text = names[0]
             player2Text.text = names[1]

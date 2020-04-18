@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ import com.example.balldontlie.util.statCategories
 import kotlinx.android.synthetic.main.fragment_compare.*
 import org.json.JSONObject
 import com.example.balldontlie.R
+import com.example.balldontlie.model.Player
 import com.example.balldontlie.model.Stats
 import kotlinx.android.synthetic.main.table_row.view.*
 
@@ -67,8 +69,9 @@ class CompareFragment() : Fragment() {
         val searchDialog = playerSelect.createSearchDialog(
             ctx, viewInflater, controller, webSearch
         ) {
-            selectedPlayers = playerSelect.selectedPlayers
-            showPlayerStats()
+            val selectedPlayers = playerSelect.selectedPlayers
+            displayStatsInTable(selectedPlayers)
+            //showPlayerStats()
         }
         searchDialog.show()
     }
@@ -79,101 +82,98 @@ class CompareFragment() : Fragment() {
      * Set the stats for the players.
      */
     private fun showPlayerStats() {
-        val currentSeason = getRegularSeason()
-        if (selectedPlayers.player1 != null) {
-            controller.get(
-                path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player1!!.id}",
-                params = JSONObject()
-            ) { response ->
-                selectedPlayers.player1!!.seasonStats =
-                    getSeasonStatsFromResponse(response)
-                if (selectedPlayers.player2 == null) {
-                    displayStatsInTable()
-                }
-            }
-        }
-
-        if (selectedPlayers.player2 != null) {
-            controller.get(
-                path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player2!!.id}",
-                params = JSONObject()
-            ) { response ->
-                selectedPlayers.player2!!.seasonStats =
-                    getSeasonStatsFromResponse(response)
-                displayStatsInTable()
-            }
-        }
+        //displayStatsInTable()
+//        val currentSeason = getRegularSeason()
+//        if (selectedPlayers.player1 != null) {
+//            controller.get(
+//                path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player1!!.id}",
+//                params = JSONObject()
+//            ) { response ->
+//                selectedPlayers.player1!!.seasonStats =
+//                    getSeasonStatsFromResponse(response)
+//                if (selectedPlayers.player2 == null) {
+//                    displayStatsInTable()
+//                }
+//            }
+//        }
+//
+//        if (selectedPlayers.player2 != null) {
+//            controller.get(
+//                path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player2!!.id}",
+//                params = JSONObject()
+//            ) { response ->
+//                selectedPlayers.player2!!.seasonStats =
+//                    getSeasonStatsFromResponse(response)
+//                displayStatsInTable()
+//            }
+//        }
     }
 
     /**
      * Construct the table rows which display the selected players stats.
      */
-    private fun displayStatsInTable() {
-        val p1Stats = selectedPlayers.player1?.seasonStats
-        val p2Stats = selectedPlayers.player2?.seasonStats
+    private fun displayStatsInTable(selectedPlayers: SelectedPlayers) {
+        val player1: Player? = selectedPlayers.player1
+        val player2: Player? = selectedPlayers.player2
 
         // Header row
-        val p1Name = selectedPlayers.player1!!.last_name
-        var p2Name = ""
-        if (selectedPlayers.player2 != null) {
-            p2Name = selectedPlayers.player2!!.last_name
-        }
-        statsTable.addView(createHeaderRow(p1Name, p2Name))
+        statsTable.addView(
+            createTableRow(
+                player1?.last_name ?: "",
+                "",
+                player2?.last_name ?: "",
+                0
+            )
+        )
 
         for (statCategory in statCategories) {
-            statsTable.addView(createStatRow(p1Stats, p2Stats, statCategory))
+            val leftStat = if (player1 != null) player1.seasonStats?.javaClass?.getMethod(
+                "get${statCategory.value}"
+            )?.invoke(player1.seasonStats).toString() else ""
+
+            val rightStat = if (player2 != null) player2.seasonStats?.javaClass?.getMethod(
+                "get${statCategory.value}"
+            )?.invoke(player2.seasonStats).toString() else ""
+
+            var highlight = 0
+            if (leftStat.isNotEmpty() && rightStat.isNotEmpty() && leftStat > rightStat) {
+                highlight = 1
+            } else if (leftStat.isNotEmpty() && rightStat.isNotEmpty() && leftStat < rightStat) {
+                highlight = 2
+            }
+
+            statsTable.addView(createTableRow(leftStat, statCategory.key, rightStat, highlight))
         }
     }
 
     /**
-     * Create a table row with player stats.
-     * Check if each player stats is not null before adding the value to the row.
-     * @param p1Stats player 1 stats
-     * @param p2Stats player 2 stats
-     * @param statCategory <"Points", "Pts"> used to retrieve the stat and display a label in table.
-     * @return table row to be added to the stat table.
+     * Create a new table row.
+     * @param textLeft: text to appear in the left cell.
+     * @param textCenter: text to appear in the center cell.
+     * @param textRight: text to appear in the right cell.
+     * @param highlight: 0 for no highlight, 1 if the left stat is higher, 2 if the right stat is.
+     * @return TableRow View to be added to a TableLayout.
      */
-    private fun createStatRow(
-        p1Stats: Stats?,
-        p2Stats: Stats?,
-        statCategory: Map.Entry<String, String>
+    private fun createTableRow(
+        textLeft: String,
+        textCenter: String,
+        textRight: String,
+        highlight: Int
     ): View {
-        val row = viewInflater.inflate(
-            R.layout.table_row, statsTable,
-            false
-        )
-        row.statP1.text = ""
-        row.statLabel.text = statCategory.key
-        row.statP2.text = ""
+        val row = viewInflater.inflate(R.layout.table_row, statsTable, false)
+        row.leftColumn.text = textLeft
+        row.centerColumn.text = textCenter
+        row.rightColumn.text = textRight
 
-        if (p1Stats != null) {
-            row.statP1.text = p1Stats.javaClass.getMethod("get${statCategory.value}")
-                .invoke(p1Stats).toString()
-        }
-
-        if (p2Stats != null) {
-            row.statP2.text = p2Stats.javaClass.getMethod("get${statCategory.value}")
-                .invoke(p2Stats).toString()
+        if (highlight == 1) {
+            row.leftColumn.setTextColor(resources.getColor(R.color.colorAccent))
+        } else if (highlight == 2) {
+            row.rightColumn.setTextColor(resources.getColor(R.color.colorAccent))
         }
 
         return row
     }
 
-    /**
-     * Create the header row for the stat tables with the selected player's last names.
-     * Reuses the stat table row layout.
-     * @param p1Name first player's last name.
-     * @param p2Name second player's last name. Could be empty.
-     */
-    private fun createHeaderRow(p1Name: String, p2Name: String): View {
-        val row = viewInflater.inflate(
-            R.layout.table_row, statsTable,
-            false
-        )
-        row.statP1.text = p1Name
-        row.statP2.text = p2Name
-        return row
-    }
 
     companion object {
         /**
