@@ -42,12 +42,12 @@ class ScheduleAdapter(private val scheduleData: List<Schedule>, ctx: Context) :
         holder.date.text = scheduleData[position].date
 
         if (scheduleData[position].win) {
-            holder.card.setCardBackgroundColor(ContextCompat.getColor(ctx, R.color.colorPrimaryDark))
+            holder.card.setCardBackgroundColor(ContextCompat.getColor(ctx, R.color.colorPrimary))
         } else {
             holder.card.setCardBackgroundColor(
                 ContextCompat.getColor(
                     ctx,
-                    R.color.colorPrimary
+                    R.color.colorPrimaryDark
                 )
             )
         }

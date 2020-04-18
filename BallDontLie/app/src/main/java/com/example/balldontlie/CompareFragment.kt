@@ -1,6 +1,7 @@
 package com.example.balldontlie
 
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +17,9 @@ import com.example.balldontlie.util.getSeasonStatsFromResponse
 import com.example.balldontlie.util.statCategories
 import kotlinx.android.synthetic.main.fragment_compare.*
 import org.json.JSONObject
+import com.example.balldontlie.R
+import com.example.balldontlie.model.Stats
+import kotlinx.android.synthetic.main.table_row.view.*
 
 
 /**
@@ -101,71 +105,71 @@ class CompareFragment() : Fragment() {
      * Construct the table rows which display the selected players stats.
      */
     private fun displayStatsInTable() {
-        val player1Stats = selectedPlayers.player1?.seasonStats
-        val player2Stats = selectedPlayers.player2?.seasonStats
+        val p1Stats = selectedPlayers.player1?.seasonStats
+        val p2Stats = selectedPlayers.player2?.seasonStats
 
-        statsTable.addView(createTableHeader())
+        // Header row
+        val p1Name = selectedPlayers.player1!!.last_name
+        var p2Name = ""
+        if (selectedPlayers.player2 != null) {
+            p2Name = selectedPlayers.player2!!.last_name
+        }
+        statsTable.addView(createHeaderRow(p1Name, p2Name))
 
         for (statCategory in statCategories) {
-            val row = TableRow(ctx)
-            row.layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-
-            val statP1 = TextView(ctx)
-            val statP2 = TextView(ctx)
-            val statLabel = TextView(ctx)
-            statP1.text = ""
-            statP2.text = ""
-            statLabel.text = statCategory.key
-
-            if (player1Stats != null) {
-                statP1.text = player1Stats.javaClass.getMethod("get${statCategory.value}")
-                    .invoke(player1Stats).toString()
-            }
-
-            if (player2Stats != null) {
-                statP2.text = player2Stats.javaClass.getMethod("get${statCategory.value}")
-                    .invoke(player2Stats).toString()
-            }
-
-            row.addView(statP1)
-            row.addView(statLabel)
-            row.addView(statP2)
-            statsTable.addView(row)
+            statsTable.addView(createStatRow(p1Stats, p2Stats, statCategory))
         }
     }
 
     /**
-     * Create the header row for the stat tables with the selected player's last names.
+     * Create a table row with player stats.
+     * Check if each player stats is not null before adding the value to the row.
+     * @param p1Stats player 1 stats
+     * @param p2Stats player 2 stats
+     * @param statCategory <"Points", "Pts"> used to retrieve the stat and display a label in table.
+     * @return table row to be added to the stat table.
      */
-    private fun createTableHeader(): TableRow {
-        val header = TableRow(ctx)
-        header.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
+    private fun createStatRow(
+        p1Stats: Stats?,
+        p2Stats: Stats?,
+        statCategory: Map.Entry<String, String>
+    ): View {
+        val row = viewInflater.inflate(
+            R.layout.table_row, statsTable,
+            false
         )
+        row.statP1.text = ""
+        row.statLabel.text = statCategory.key
+        row.statP2.text = ""
 
-        val player1Name = TextView(ctx)
-        val filler = TextView(ctx)
-        val player2Name = TextView(ctx)
-        player1Name.text = ""
-        player2Name.text = ""
-        filler.text = ""
-
-        if (selectedPlayers.player1 != null) {
-            player1Name.text = selectedPlayers.player1!!.last_name
+        if (p1Stats != null) {
+            row.statP1.text = p1Stats.javaClass.getMethod("get${statCategory.value}")
+                .invoke(p1Stats).toString()
         }
 
-        if (selectedPlayers.player2 != null) {
-            player2Name.text = selectedPlayers.player2!!.last_name
+        if (p2Stats != null) {
+            row.statP2.text = p2Stats.javaClass.getMethod("get${statCategory.value}")
+                .invoke(p2Stats).toString()
         }
 
-        header.addView(player1Name)
-        header.addView(filler)
-        header.addView(player2Name)
-        return header
+        return row
+    }
+
+    /**
+     * Create the header row for the stat tables with the selected player's last names.
+     * Reuses the stat table row layout.
+     * @param p1Name first player's last name.
+     * @param p2Name second player's last name. Could be empty.
+     */
+    private fun createHeaderRow(p1Name: String, p2Name: String): View {
+        val row = viewInflater.inflate(
+            R.layout.table_row, statsTable,
+            false
+        )
+        row.statP1.text = p1Name
+        row.statP2.text = p2Name
+        row.statP1.setTextColor(resources.getColor(R.color.colorPrimary))
+        return row
     }
 
     companion object {
