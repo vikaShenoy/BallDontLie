@@ -111,10 +111,10 @@ class ScheduleFragment : Fragment() {
     private fun initTeamSpinner() {
         ArrayAdapter(
             ctx,
-            android.R.layout.simple_spinner_item,
+            android.R.layout.simple_spinner_dropdown_item,
             teamMap.keys.toTypedArray()
         ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             teamSpinner.adapter = adapter
             teamSpinner.setSelection(adapter.getPosition(TEAM_DEFAULT_NAME))
         }

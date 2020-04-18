@@ -30,6 +30,7 @@ class CompareFragment() : Fragment() {
     private lateinit var viewInflater: LayoutInflater
     private lateinit var playerSelect: PlayerSelect
 
+    private var selectedPlayers: SelectedPlayers = SelectedPlayers()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,9 +55,13 @@ class CompareFragment() : Fragment() {
     private fun showSearchDialog() {
         statsTable.removeAllViews()
         playerSelect.selectedPlayers.clearPlayers()
+        selectedPlayers.clearPlayers()
         val searchDialog = playerSelect.createSearchDialog(
             ctx, viewInflater, controller
-        ) { showPlayerStats() }
+        ) {
+            selectedPlayers = playerSelect.selectedPlayers
+            showPlayerStats()
+        }
         searchDialog.show()
     }
 
@@ -66,7 +71,6 @@ class CompareFragment() : Fragment() {
      * Set the stats for the players.
      */
     private fun showPlayerStats() {
-        val selectedPlayers = playerSelect.selectedPlayers
         val currentSeason = getRegularSeason()
         if (selectedPlayers.player1 != null) {
             controller.get(
@@ -76,7 +80,7 @@ class CompareFragment() : Fragment() {
                 selectedPlayers.player1!!.seasonStats =
                     getSeasonStatsFromResponse(response)
                 if (selectedPlayers.player2 == null) {
-                    displayStatsInTable(selectedPlayers)
+                    displayStatsInTable()
                 }
             }
         }
@@ -88,7 +92,7 @@ class CompareFragment() : Fragment() {
             ) { response ->
                 selectedPlayers.player2!!.seasonStats =
                     getSeasonStatsFromResponse(response)
-                displayStatsInTable(selectedPlayers)
+                displayStatsInTable()
             }
         }
     }
@@ -96,35 +100,11 @@ class CompareFragment() : Fragment() {
     /**
      * Construct the table rows which display the selected players stats.
      */
-    private fun displayStatsInTable(selectedPlayers : SelectedPlayers) {
+    private fun displayStatsInTable() {
         val player1Stats = selectedPlayers.player1?.seasonStats
         val player2Stats = selectedPlayers.player2?.seasonStats
 
-        val header = TableRow(ctx)
-        header.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-
-        val player1Name = TextView(ctx)
-        val filler = TextView(ctx)
-        val player2Name = TextView(ctx)
-        player1Name.text = ""
-        player2Name.text = ""
-        filler.text = ""
-
-        if (selectedPlayers.player1 != null) {
-            player1Name.text = selectedPlayers.player1!!.last_name
-        }
-
-        if (selectedPlayers.player2 != null) {
-            player2Name.text = selectedPlayers.player2!!.last_name
-        }
-
-        header.addView(player1Name)
-        header.addView(filler)
-        header.addView(player2Name)
-        statsTable.addView(header)
+        statsTable.addView(createTableHeader())
 
         for (statCategory in statCategories) {
             val row = TableRow(ctx)
@@ -155,6 +135,37 @@ class CompareFragment() : Fragment() {
             row.addView(statP2)
             statsTable.addView(row)
         }
+    }
+
+    /**
+     * Create the header row for the stat tables with the selected player's last names.
+     */
+    private fun createTableHeader(): TableRow {
+        val header = TableRow(ctx)
+        header.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        val player1Name = TextView(ctx)
+        val filler = TextView(ctx)
+        val player2Name = TextView(ctx)
+        player1Name.text = ""
+        player2Name.text = ""
+        filler.text = ""
+
+        if (selectedPlayers.player1 != null) {
+            player1Name.text = selectedPlayers.player1!!.last_name
+        }
+
+        if (selectedPlayers.player2 != null) {
+            player2Name.text = selectedPlayers.player2!!.last_name
+        }
+
+        header.addView(player1Name)
+        header.addView(filler)
+        header.addView(player2Name)
+        return header
     }
 
     companion object {

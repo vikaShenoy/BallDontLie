@@ -60,13 +60,17 @@ class PerformanceFragment : Fragment() {
         performanceSearchButton.setOnClickListener { showSearchDialog() }
     }
 
+    /**
+     * Set the spinner elements which allows the user to select the time frame
+     * to view stats over in the graph.
+     */
     private fun initTimeSpinner() {
         ArrayAdapter(
             ctx,
-            android.R.layout.simple_spinner_item,
+            android.R.layout.simple_spinner_dropdown_item,
             timeOptions.keys.toTypedArray()
         ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             timeSelection.adapter = adapter
             timeSelection.setSelection(adapter.getPosition(TIME_DEFAULT))
         }
@@ -90,17 +94,20 @@ class PerformanceFragment : Fragment() {
         }
     }
 
+    /**
+     * Set the stat spinner elements so the user can choose which statistic to be displayed
+     * in the graph.
+     */
     private fun initStatSpinner() {
         ArrayAdapter(
             ctx,
-            android.R.layout.simple_spinner_item,
+            android.R.layout.simple_spinner_dropdown_item,
             statCategories.keys.toTypedArray()
         ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             statSelection.adapter = adapter
             statSelection.setSelection(adapter.getPosition(STATS_DEFAULT))
         }
-
 
         statSelection.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -122,8 +129,13 @@ class PerformanceFragment : Fragment() {
 
     }
 
+    /**
+     * Open the search popup so the user can select players to view stats for.
+     * Call chart refresh when the dialog is dismissed.
+     */
     private fun showSearchDialog() {
         playerSelect.selectedPlayers.clearPlayers()
+        selectedPlayers.clearPlayers()
         val searchDialog = playerSelect.createSearchDialog(
             ctx, viewInflater, controller
         ) {
@@ -154,7 +166,7 @@ class PerformanceFragment : Fragment() {
             ) { response ->
                 selectedPlayers.player1!!.gameStats = getGameStatsFromResponse(response)
                 if (selectedPlayers.player2 == null) {
-                    displayStatsInChart(selectedPlayers)
+                    displayStatsInChart()
                 }
             }
         }
@@ -166,7 +178,7 @@ class PerformanceFragment : Fragment() {
                 params = JSONObject()
             ) { response ->
                 selectedPlayers.player2!!.gameStats = getGameStatsFromResponse(response)
-                displayStatsInChart(selectedPlayers)
+                displayStatsInChart()
             }
         }
     }
@@ -175,9 +187,7 @@ class PerformanceFragment : Fragment() {
     /**
      * Marshall the player stats into chart data and display it.
      */
-    private fun displayStatsInChart(
-        selectedPlayers: SelectedPlayers
-    ) {
+    private fun displayStatsInChart() {
         val p1Stats = selectedPlayers.player1?.gameStats
         val p2Stats = selectedPlayers.player2?.gameStats
 
