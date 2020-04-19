@@ -71,46 +71,14 @@ class CompareFragment() : Fragment() {
         ) {
             val selectedPlayers = playerSelect.selectedPlayers
             displayStatsInTable(selectedPlayers)
-            //showPlayerStats()
         }
         searchDialog.show()
     }
 
 
     /**
-     * Call the API for the selected player's current season stats.
-     * Set the stats for the players.
-     */
-    private fun showPlayerStats() {
-        //displayStatsInTable()
-//        val currentSeason = getRegularSeason()
-//        if (selectedPlayers.player1 != null) {
-//            controller.get(
-//                path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player1!!.id}",
-//                params = JSONObject()
-//            ) { response ->
-//                selectedPlayers.player1!!.seasonStats =
-//                    getSeasonStatsFromResponse(response)
-//                if (selectedPlayers.player2 == null) {
-//                    displayStatsInTable()
-//                }
-//            }
-//        }
-//
-//        if (selectedPlayers.player2 != null) {
-//            controller.get(
-//                path = "season_averages?season=${currentSeason}&player_ids[]=${selectedPlayers.player2!!.id}",
-//                params = JSONObject()
-//            ) { response ->
-//                selectedPlayers.player2!!.seasonStats =
-//                    getSeasonStatsFromResponse(response)
-//                displayStatsInTable()
-//            }
-//        }
-    }
-
-    /**
      * Construct the table rows which display the selected players stats.
+     * @param selectedPlayers players to be added to the stat table.
      */
     private fun displayStatsInTable(selectedPlayers: SelectedPlayers) {
         val player1: Player? = selectedPlayers.player1
@@ -151,7 +119,7 @@ class CompareFragment() : Fragment() {
      * @param textLeft: text to appear in the left cell.
      * @param textCenter: text to appear in the center cell.
      * @param textRight: text to appear in the right cell.
-     * @param highlight: 0 for no highlight, 1 if the left stat is higher, 2 if the right stat is.
+     * @param highlight: 0 for no highlight, 1 to highlight left, 2 to highlight right.
      * @return TableRow View to be added to a TableLayout.
      */
     private fun createTableRow(

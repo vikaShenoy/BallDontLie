@@ -9,6 +9,8 @@ import com.google.gson.Gson
 import org.json.JSONObject
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import androidx.annotation.StringRes
+import com.example.balldontlie.R
 
 const val DATE_PATTERN: String = "dd/MM/yyyy"
 
