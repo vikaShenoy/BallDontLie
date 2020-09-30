@@ -1,0 +1,1 @@
+Mobile application developed in Kotlin for basketball fans. Core functionality includes viewing a schedule of past/today/future games for any NBA team, comparing statistics for two players in a table and comparing player statistics over time in a graph. 
